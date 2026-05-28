@@ -142,7 +142,7 @@ module.exports = {
         `- Açık Korumalar: ${guardOrder.filter(o=>guardSettings[o.key]).map(o=>o.label).join(', ') || 'Yok'}`
       )
       .setColor('Green')
-      .setFooter({ text: 'onur - setup' })
+      .setFooter({ text: 'qoldslitz34 - setup' })
       .setTimestamp();
     await message.channel.send({ embeds: [embed] });
     await message.channel.send('Bot yeniden başlatılıyor...');

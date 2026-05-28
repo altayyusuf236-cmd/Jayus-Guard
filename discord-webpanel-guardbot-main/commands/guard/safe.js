@@ -1,4 +1,4 @@
-// onur altyapı - safe komutları
+// qoldslitz34 altyapı - safe komutları
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, AttachmentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require("discord.js");
 const Safe = require("../../schemas/safe");
 const config = require("../../config");

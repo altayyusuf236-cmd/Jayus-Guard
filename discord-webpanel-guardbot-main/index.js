@@ -249,7 +249,7 @@ app.use('/settings', require('./routes/settings'));
 app.use('/bot-settings', require('./routes/bot-settings'));
 
 app.get('/', async (req, res) => {
-  if (!req.session.userId) return res.redirect('/panel-login');
+  if (!req.session.userId) return res.redirect('/login');
   
   try {
     const guildID = config.guildID;
@@ -619,6 +619,20 @@ app.post('/api/guard-settings', async (req, res) => {
 
 
 
+// GEÇİCİ ADMIN OLUŞTURMA KODU (İçeri girince sileceğiz)
+app.get('/hesap-yarat', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await User.findOneAndUpdate(
+      { username: 'admin' },
+      { username: 'admin', password: hashedPassword },
+      { upsert: true, new: true }
+    );
+    res.send('✅ Admin hesabı başarıyla veri tabanına kaydedildi! Kullanıcı adı: admin | Şifre: admin123');
+  } catch (err) {
+    res.status(500).send('Hata oluştu kanka: ' + err.message);
+  }
+});
 
 
 client.login(config.token).then(() => {

@@ -64,7 +64,7 @@ module.exports = {
         { name: '🏓 Ping', value: `${ping} ms`, inline: true },
         { name: '🚫 Engellenen İşlem', value: `${bannedCount} işlem`, inline: true }
       )
-      .setFooter({ text: 'onur - yeni nesil guard status', iconURL: bot.displayAvatarURL() })
+      .setFooter({ text: 'qoldslitz34 - yeni nesil guard status', iconURL: bot.displayAvatarURL() })
       .setTimestamp();
 
     await message.reply({ embeds: [embed] });

@@ -15,7 +15,7 @@ module.exports = {
         emoji: '🛡️',
         name: '.safe ekle/çıkar/liste @üye',
         desc: 'Güvenli kullanıcı ekle, çıkar veya listele',
-        example: '.safe ekle @onur'
+        example: '.safe ekle @qoldslitz34'
       },
       {
         emoji: '🧬',

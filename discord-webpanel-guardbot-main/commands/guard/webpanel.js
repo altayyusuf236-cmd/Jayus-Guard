@@ -9,7 +9,7 @@ module.exports = {
       .setTitle('🌐 Web Panel')
       .setDescription('[Web paneli açmak için tıkla](http://localhost:3000)\nKullanıcı adı ve şifre ile giriş yapabilirsiniz.')
       .setColor('#5865f2')
-      .setFooter({ text: 'onur - webpanel' })
+      .setFooter({ text: 'qoldslitz - webpanel' })
       .setTimestamp();
     message.channel.send({ embeds: [embed] });
   }

@@ -6,8 +6,8 @@ const config = require('./config');
 async function addUser() {
   await mongoose.connect(config.mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 
-  const username = 'onurcanx';
-  const password = 'onurcanx';
+  const username = 'yusuf';
+  const password = '3644AB3644';
   const hashed = await bcrypt.hash(password, 10);
 
   const user = new User({ username, password: hashed });

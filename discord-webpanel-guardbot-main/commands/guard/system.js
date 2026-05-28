@@ -53,7 +53,7 @@ module.exports = {
         allKeys.map(key => `${emojiMap[key]} **${labelMap[key]}:** ${data[key] ? '🟩 Açık' : '🟥 Kapalı'}`).join('\n')
       )
       .setColor('#ffb300')
-      .setFooter({ text: 'onur - yeni sistem' })
+      .setFooter({ text: 'qoldslitz34 - yeni sistem' })
       .setTimestamp();
 
     const select = new StringSelectMenuBuilder()
