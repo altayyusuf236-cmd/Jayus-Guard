@@ -54,7 +54,7 @@ module.exports = {
       .setDescription('Aşağıda botun tüm komutlarını ve açıklamalarını bulabilirsin. Her komut yeni nesil, hızlı ve stabil çalışır!')
       .setColor('#00e1ff')
       .setThumbnail('https://cdn.discordapp.com/icons/833656201623109712/7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e.webp?size=256')
-      .setFooter({ text: 'onur - modern guard bot', iconURL: 'https://cdn.discordapp.com/avatars/833656201623109712/7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e.webp?size=128' })
+      .setFooter({ text: 'qoldslitz34 - modern guard bot', iconURL: 'https://cdn.discordapp.com/avatars/833656201623109712/7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e.webp?size=128' })
       .setTimestamp();
 
     for (const cmd of commands) {

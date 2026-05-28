@@ -26,7 +26,7 @@ module.exports = {
           .setTitle('🛡️ Guard Panel')
           .setDescription('Aşağıdaki butonlarla guard ayarlarını kolayca yönetebilirsin.')
           .setColor('#5865f2')
-          .setFooter({ text: 'onur - guard panel' })
+          .setFooter({ text: 'qoldslitz34 - guard panel' })
           .setTimestamp();
 
         const row1 = new ActionRowBuilder()
