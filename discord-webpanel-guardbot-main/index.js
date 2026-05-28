@@ -619,20 +619,27 @@ app.post('/api/guard-settings', async (req, res) => {
 
 
 
-// GEÇİCİ ADMIN OLUŞTURMA KODU (İçeri girince sileceğiz)
-app.get('/hesap-yarat', async (req, res) => {
+// 🔐 SADECE BİR KEZ ÇALIŞTIRILACAK KALICI HESAP OLUŞTURUCU
+app.get('/kalici-hesap-yarat', async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    // ⬇️ Kanka buraları tamamen kendi istediğin gibi değiştir:
+    const seninKullaniciAdin = "qoldslitz34"; // Örn: yusuf, admin, kurucu vs.
+    const seninKalıcıSifren   = "3644AB3644";     // Girişte kullanacağın şifren
+
+    const hashedPassword = await bcrypt.hash(seninKalıcıSifren, 10);
+    
     await User.findOneAndUpdate(
-      { username: 'admin' },
-      { username: 'admin', password: hashedPassword },
+      { username: seninKullaniciAdin.trim() },
+      { username: seninKullaniciAdin.trim(), password: hashedPassword },
       { upsert: true, new: true }
     );
-    res.send('✅ Admin hesabı başarıyla veri tabanına kaydedildi! Kullanıcı adı: admin | Şifre: admin123');
+    
+    res.send(`✅ Kalıcı hesabın MongoDB'ye kaydedildi kanka! Kullanıcı adı: ${seninKullaniciAdin}`);
   } catch (err) {
     res.status(500).send('Hata oluştu kanka: ' + err.message);
   }
 });
+
 
 
 client.login(config.token).then(() => {
