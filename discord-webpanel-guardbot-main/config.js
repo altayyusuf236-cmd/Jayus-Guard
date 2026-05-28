@@ -1,5 +1,5 @@
 module.exports = {
-    token: "process.env.TOKEN", //(Bot Tokeniniz)
+    token: "process.env.token", //(Bot Tokeniniz)
     prefix: ".", //   (Botunuzun ön eki )
     mongoUrl: "process.env.MONGO_URL", //(database => mongdodb urlniz)
     owners: ["1469310778518536265"], //(Bot Owner Idleri Bazı komutlarda gerekli "", le çoğaltabilirsiniz)
