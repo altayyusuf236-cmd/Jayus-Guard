@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Ayarları - Guard Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5865f2;
+            --secondary-color: #2c2f33;
+            --accent-color: #7289da;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --border-color: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .server-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .server-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--danger-color), #d32f2f);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 71, 71, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .logout-btn i {
+            font-size: 1rem;
+        }
+
+        /* Guard Settings */
+        .guard-settings {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .settings-panel {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--success-color), #2d5a2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .group-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .group-icon {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .setting-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        /* Status Panel */
+        .status-panel {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            height: fit-content;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, var(--primary-color), #2d4a7a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .status-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(67, 181, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-badge.inactive {
+            background: rgba(240, 71, 71, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Save Button */
+        .save-section {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, var(--success-color), #2d5a2d);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 181, 129, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .guard-settings {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar">
+            <div class="bot-name"><%= botUsername %></div>
+            <div class="bot-status">
+                <span id="guardStatus" class="badge <%= guardEnabled ? 'bg-success' : 'bg-danger' %>">
+                    <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                </span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/guard/<%= guildID %>" class="nav-link active">
+                    <i class="fas fa-shield-halved nav-icon"></i>
+                    Guard Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/logs/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-list-alt nav-icon"></i>
+                    Log Kayıtları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/safe-users/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Güvenli Kullanıcılar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/roles/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-tag nav-icon"></i>
+                    Rol Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/channels/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-hashtag nav-icon"></i>
+                    Kanal Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/bot-settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-robot nav-icon"></i>
+                    Bot Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    Genel Ayarlar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">Guard Ayarları</h1>
+                <div class="server-info">
+                    <img src="<%= guild.iconURL({ size: 128, extension: 'png' }) || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt="Server Icon" class="server-icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="server-details">
+                        <h4><%= guild.name %></h4>
+                        <p><%= guild.memberCount %> üye</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+
+        <div class="guard-settings">
+            <!-- Settings Panel -->
+            <div class="settings-panel">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div class="settings-title">Guard Sistemi Ayarları</div>
+                </div>
+
+                <form id="guardForm" action="/guard/<%= guildID %>" method="POST">
+                    <!-- Channel Protection -->
+                    <div class="setting-group">
+                        <div class="group-title">
+                            <i class="fas fa-hashtag group-icon"></i>
+                            Kanal Koruması
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Kanal Oluşturma Koruması</div>
+                                <div class="setting-description">Yeni kanal oluşturulmasını engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="channelCreate" <%= channelCreate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Kanal Silme Koruması</div>
+                                <div class="setting-description">Kanal silinmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="channelDelete" <%= channelDelete ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Kanal Düzenleme Koruması</div>
+                                <div class="setting-description">Kanal ayarlarının değiştirilmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="channelUpdate" <%= channelUpdate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Role Protection -->
+                    <div class="setting-group">
+                        <div class="group-title">
+                            <i class="fas fa-user-tag group-icon"></i>
+                            Rol Koruması
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Rol Oluşturma Koruması</div>
+                                <div class="setting-description">Yeni rol oluşturulmasını engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="roleCreate" <%= roleCreate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Rol Silme Koruması</div>
+                                <div class="setting-description">Rol silinmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="roleDelete" <%= roleDelete ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Rol Düzenleme Koruması</div>
+                                <div class="setting-description">Rol ayarlarının değiştirilmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="roleUpdate" <%= roleUpdate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Server Protection -->
+                    <div class="setting-group">
+                        <div class="group-title">
+                            <i class="fas fa-server group-icon"></i>
+                            Sunucu Koruması
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Sunucu Düzenleme Koruması</div>
+                                <div class="setting-description">Sunucu ayarlarının değiştirilmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="guildUpdate" <%= guildUpdate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Ban Koruması</div>
+                                <div class="setting-description">Toplu ban işlemlerini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="banAdd" <%= banAdd ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Üye Çıkarma Koruması</div>
+                                <div class="setting-description">Toplu üye çıkarma işlemlerini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="memberRemove" <%= memberRemove ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Emoji & Sticker Protection -->
+                    <div class="setting-group">
+                        <div class="group-title">
+                            <i class="fas fa-smile group-icon"></i>
+                            Emoji & Sticker Koruması
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Emoji Oluşturma Koruması</div>
+                                <div class="setting-description">Yeni emoji oluşturulmasını engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="emojiCreate" <%= emojiCreate ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Emoji Silme Koruması</div>
+                                <div class="setting-description">Emoji silinmesini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="emojiDelete" <%= emojiDelete ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Sticker Koruması</div>
+                                <div class="setting-description">Sticker oluşturma/silme işlemlerini engeller</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="stickerProtection" <%= stickerProtection ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <div class="group-title">
+                            <i class="fas fa-shield-alt group-icon"></i>
+                            Panel Koruma Ayarları
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Kanal Koruması</div>
+                                <div class="setting-description">Sunucuda kanal oluşturma/silme işlemlerini korur</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="kanalKoruma" <%= panel && panel.kanalKoruma ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Rol Koruması</div>
+                                <div class="setting-description">Sunucuda rol oluşturma/silme işlemlerini korur</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="rolKoruma" <%= panel && panel.rolKoruma ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Emoji Koruması</div>
+                                <div class="setting-description">Sunucuda emoji ekleme/silme işlemlerini korur</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="emojiKoruma" <%= panel && panel.emojiKoruma ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Ban/Kick Koruması</div>
+                                <div class="setting-description">Sunucuda toplu ban/kick işlemlerini korur</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="banKickKoruma" <%= panel && panel.banKickKoruma ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="status-panel">
+                <div class="status-header">
+                    <div class="status-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="status-title">Guard Durumu</div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-label">Genel Durum</div>
+                    <div class="status-badge <%= guardEnabled ? 'active' : 'inactive' %>">
+                        <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                    </div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-label">Aktif Korumalar</div>
+                    <div class="status-value" id="activeProtections">0</div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-label">Son Güncelleme</div>
+                    <div class="status-value">2 dakika önce</div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-label">Log Kanalı</div>
+                    <div class="status-value">
+                        <% if (logChannelID) { %>
+                            <i class="fas fa-check-circle text-success"></i> Ayarlandı
+                        <% } else { %>
+                            <i class="fas fa-times-circle text-danger"></i> Ayarlandı
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-label">Güvenli Kullanıcılar</div>
+                    <div class="status-value"><%= safeUsers.length %></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Section -->
+        <div class="save-section">
+            <button type="submit" form="guardForm" class="save-btn">
+                <i class="fas fa-save"></i> Ayarları Kaydet
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Update active protections count
+        function updateActiveProtections() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            document.getElementById('activeProtections').textContent = checkboxes.length;
+        }
+
+        // Listen for checkbox changes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateActiveProtections);
+        });
+
+        // Initial count
+        updateActiveProtections();
+    </script>
+</body>
+<%- include('layout-blocker.ejs') %>
+</html> 

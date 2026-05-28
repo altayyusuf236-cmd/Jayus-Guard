@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Bot Web Paneli - Giriş</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Share Tech Mono', 'Orbitron', monospace, sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .neon-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 70% 30%, #00fff7 0%, transparent 60%),
+                        radial-gradient(circle at 20% 80%, #6a8dff 0%, transparent 70%);
+            opacity: 0.18;
+            animation: bgmove 8s infinite alternate;
+        }
+        @keyframes bgmove {
+            0% { filter: blur(0px);}
+            100% { filter: blur(8px);}
+        }
+        .login-panel {
+            background: rgba(30, 34, 45, 0.98);
+            border: 2px solid #00fff7;
+            border-radius: 18px;
+            box-shadow: 0 0 40px #00fff744, 0 0 80px #6a8dff22, inset 0 0 30px #00fff711;
+            padding: 48px 38px 38px 38px;
+            max-width: 370px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(12px);
+            animation: fadein 1.2s cubic-bezier(.77,0,.18,1) both;
+        }
+        @keyframes fadein {
+            from { opacity: 0; transform: scale(0.95);}
+            to { opacity: 1; transform: scale(1);}
+        }
+        .robot-svg {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 18px auto;
+            display: block;
+            filter: drop-shadow(0 0 18px #00fff7cc);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #00fff7;
+            box-shadow: 0 0 25px #00fff7aa;
+        }
+        .login-title {
+            font-size: 2.5rem;
+            font-family: 'Orbitron', monospace;
+            color: #00fff7;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 0 12px #00fff7cc;
+        }
+        .login-desc {
+            color: #6a8dff;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.85;
+            letter-spacing: 1px;
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-label {
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            background: rgba(30, 34, 45, 0.98);
+            color: #00fff7;
+            font-size: 0.85rem;
+            padding: 0 10px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
+        .login-input {
+            background: transparent;
+            border: 2px solid #00fff7;
+            border-radius: 10px;
+            padding: 16px 20px;
+            color: #00fff7;
+            font-size: 1.08rem;
+            outline: none;
+            transition: all 0.3s;
+            font-family: 'Share Tech Mono', monospace;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .login-input:focus {
+            border-color: #6a8dff;
+            background: rgba(0, 255, 247, 0.07);
+            box-shadow: 0 0 18px #00fff7aa;
+        }
+        .login-input::placeholder {
+            color: transparent;
+        }
+        .login-btn {
+            background: linear-gradient(90deg, #00fff7 0%, #6a8dff 100%);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            padding: 16px 0;
+            font-size: 1.15rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-top: 12px;
+            box-shadow: 0 4px 22px #00fff744;
+            transition: all 0.3s;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+        }
+        .login-btn:hover {
+            background: linear-gradient(90deg, #6a8dff 0%, #00fff7 100%);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 8px 28px #00fff7cc;
+        }
+        .login-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        .error-message {
+            color: #ff0055;
+            margin-bottom: 18px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-shadow: 0 0 7px #ff005588;
+        }
+        @media (max-width: 500px) {
+            .login-panel {
+                padding: 26px 6vw 18px 6vw;
+                max-width: 98vw;
+                margin: 10px;
+            }
+            .login-title {
+                font-size: 1.4rem;
+                letter-spacing: 2px;
+            }
+            .robot-svg {
+                width: 70px;
+                height: 70px;
+            }
+            .login-input {
+                padding: 10px 10px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="neon-bg"></div>
+    <div class="login-panel">
+        <svg class="robot-svg" viewBox="0 0 128 128" fill="none">
+            <ellipse cx="64" cy="64" rx="62" ry="62" fill="#0a0a0a" stroke="#00fff7" stroke-width="4"/>
+            <ellipse cx="64" cy="64" rx="54" ry="54" fill="#16213e" opacity="0.7"/>
+            <path d="M32 80 Q64 110 96 80" stroke="#00fff7" stroke-width="4" fill="none"/>
+            <ellipse cx="48" cy="64" rx="8" ry="12" fill="#fff"/>
+            <ellipse cx="80" cy="64" rx="8" ry="12" fill="#fff"/>
+            <ellipse cx="48" cy="68" rx="3" ry="5" fill="#222"/>
+            <ellipse cx="80" cy="68" rx="3" ry="5" fill="#222"/>
+            <path d="M40 90 Q64 105 88 90" stroke="#6a8dff" stroke-width="3" fill="none"/>
+            <ellipse cx="64" cy="44" rx="32" ry="18" fill="#fff" opacity="0.08"/>
+            <ellipse cx="64" cy="44" rx="28" ry="12" fill="#fff" opacity="0.12"/>
+            <ellipse cx="64" cy="44" rx="18" ry="6" fill="#fff" opacity="0.18"/>
+        </svg>
+        <div class="login-title">Guard Bot</div>
+        <div class="login-desc">Web Paneli Giriş</div>
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+        <form class="login-form" method="POST" action="/login" autocomplete="off" id="loginForm">
+            <div class="input-group">
+                <label class="input-label">KULLANICI ADI</label>
+                <input type="text" class="login-input" id="username" name="username" required autocomplete="off" maxlength="50">
+            </div>
+            <div class="input-group">
+                <label class="input-label">ŞİFRE</label>
+                <input type="password" class="login-input" id="password" name="password" required autocomplete="new-password" maxlength="100">
+            </div>
+            <button type="submit" class="login-btn">GİRİŞ YAP</button>
+        </form>
+    </div>
+    <script>
+        // F12, Sağ tık, Ctrl+U, Ctrl+Shift+I engelleme
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+                (e.ctrlKey && e.key === 'U') ||
+                (e.ctrlKey && e.key === 'S')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        setInterval(function() {
+            if (window.outerHeight - window.innerHeight > 200 || 
+                window.outerWidth - window.innerWidth > 200) {
+                document.body.innerHTML = '';
+                document.head.innerHTML = '';
+            }
+        }, 1000);
+        // Form güvenliği
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (!username || !password) {
+                e.preventDefault();
+                alert('Lütfen tüm alanları doldurun!');
+                return false;
+            }
+            if (username.includes('<') || username.includes('>') || 
+                password.includes('<') || password.includes('>')) {
+                e.preventDefault();
+                alert('Geçersiz karakterler tespit edildi!');
+                return false;
+            }
+        });
+        // Otomatik doldurma engelleme
+        document.getElementById('username').setAttribute('autocomplete', 'off');
+        document.getElementById('password').setAttribute('autocomplete', 'new-password');
+        // Inputlar submit sonrası temizlensin
+        document.querySelector('form').addEventListener('submit', function() {
+            setTimeout(function() {
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

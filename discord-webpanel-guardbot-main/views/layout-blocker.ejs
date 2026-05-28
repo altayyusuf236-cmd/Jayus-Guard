@@ -1,0 +1,17 @@
+<script>
+// F12, sağ tık, ctrl+u, ctrl+shift+i, ctrl+shift+j, ctrl+s, ctrl+p engelle
+window.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+        (e.ctrlKey && (e.key === 'U' || e.key === 'S' || e.key === 'P'))
+    ) {
+        e.preventDefault();
+        return false;
+    }
+});
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+</script> 

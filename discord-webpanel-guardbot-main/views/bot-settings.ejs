@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Ayarları - Guard Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5865f2;
+            --secondary-color: #2c2f33;
+            --accent-color: #7289da;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --border-color: #404040;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .nav-menu {
+            padding: 20px 0;
+        }
+        .nav-item {
+            list-style: none;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+        .nav-link.active {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+        .server-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .server-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--danger-color), #d32f2f);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 71, 71, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        .logout-btn i {
+            font-size: 1rem;
+        }
+        /* Bot Ayarları Kartı */
+        .bot-settings-card { background: rgba(35,39,42,0.98); border-radius: 22px; padding: 40px 32px; max-width: 480px; margin: 0 auto; box-shadow: 0 8px 32px #0005, 0 1.5px 0 #5865f2; }
+        .bot-avatar-large { width: 110px; height: 110px; border-radius: 50%; border: 5px solid #5865f2; margin-bottom: 18px; box-shadow: 0 2px 16px #5865f2aa; }
+        .bot-name-large { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        .bot-id-large { color: #b9bbbe; font-size: 1rem; margin-bottom: 8px; }
+        .status-row { display: flex; gap: 18px; margin: 28px 0 18px 0; flex-wrap: wrap; }
+        .status-box { background: #26282c; border-radius: 14px; padding: 20px 0; text-align: center; flex: 1 1 120px; min-width: 120px; box-shadow: 0 2px 8px #0002; }
+        .status-label { color: #b9bbbe; font-size: 1.05rem; margin-bottom: 4px; }
+        .status-value { font-size: 1.4rem; font-weight: 700; }
+        .btn-group { gap: 14px; flex-wrap: wrap; }
+        .btn { font-size: 1.1rem; padding: 14px 28px; border-radius: 10px; min-width: 120px; }
+        .form-label { color: #b9bbbe; margin-top: 22px; font-weight: 600; }
+        .input-group { border-radius: 8px; overflow: hidden; }
+        .form-control, .form-control:focus { background: #23272a; color: #fff; border: 1.5px solid #5865f2; font-size: 1.1rem; }
+        .form-control:focus { box-shadow: 0 0 0 2px #5865f2; }
+        .divider { border-bottom: 1.5px solid #333; margin: 36px 0 28px 0; }
+        #bot-action-result { min-height: 24px; font-size: 1.08rem; }
+        @media (max-width: 600px) {
+            .main-content { margin-left: 0; }
+            .bot-settings-card { padding: 18px 4vw; max-width: 98vw; margin: 18px 1vw; }
+            .status-row { flex-direction: column; gap: 10px; }
+            .btn-group { flex-direction: column; gap: 10px; }
+            .btn { min-width: 0; width: 100%; }
+        }
+        .avatar-upload-group { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .avatar-preview { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #5865f2; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar">
+            <div class="bot-name"><%= botUsername %></div>
+            <div class="bot-status">
+                <span id="guardStatus" class="badge <%= guardEnabled ? 'bg-success' : 'bg-danger' %>">
+                    <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                </span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/guard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-shield-halved nav-icon"></i>
+                    Guard Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/logs/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-list-alt nav-icon"></i>
+                    Log Kayıtları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/safe-users/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Güvenli Kullanıcılar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/roles/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-tag nav-icon"></i>
+                    Rol Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/channels/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-hashtag nav-icon"></i>
+                    Kanal Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/bot-settings/<%= guildID %>" class="nav-link active">
+                    <i class="fas fa-robot nav-icon"></i>
+                    Bot Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    Genel Ayarlar
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">Bot Ayarları</h1>
+                <div class="server-info">
+                    <img src="<%= guild && guild.iconURL ? guild.iconURL({ size: 128, extension: 'png' }) : 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt="Server Icon" class="server-icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="server-details">
+                        <h4><%= guild && guild.name ? guild.name : '' %></h4>
+                        <p><%= guild && guild.memberCount ? guild.memberCount : '' %> üye</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+        <div class="bot-settings-card">
+            <div class="text-center mb-2">
+                <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar-large">
+                <div class="bot-name-large"><%= botUsername %></div>
+                <div class="bot-id-large">ID: <%= botId %></div>
+            </div>
+            <div class="status-row">
+                <div class="status-box">
+                    <div class="status-label">Ping</div>
+                    <div class="status-value"><%= ping %> ms</div>
+                </div>
+                <div class="status-box">
+                    <div class="status-label">Uptime</div>
+                    <div class="status-value" id="uptime-value"></div>
+                </div>
+            </div>
+            <div class="btn-group d-flex justify-content-center mb-3">
+                <button class="btn btn-success" onclick="botControl('start')"><i class="fa fa-play"></i> Başlat</button>
+                <button class="btn btn-warning" onclick="botControl('restart')"><i class="fa fa-rotate"></i> Yeniden Başlat</button>
+                <button class="btn btn-danger" onclick="botControl('stop')"><i class="fa fa-stop"></i> Durdur</button>
+            </div>
+            <div id="bot-action-result" class="text-center mb-2"></div>
+            <div class="divider"></div>
+            <form id="username-form" class="mb-3">
+                <label class="form-label">Bot İsmini Değiştir</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" name="username" placeholder="Yeni bot ismi" maxlength="32" required>
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-pen"></i> Güncelle</button>
+                </div>
+            </form>
+            <form id="avatar-form" class="mb-3">
+                <label class="form-label">Bot Avatarını Değiştir (URL)</label>
+                <div class="avatar-upload-group">
+                    <input type="url" class="form-control" name="avatarURL" placeholder="Avatar URL" required style="max-width: 300px;">
+                    <img src="<%= botAvatar %>" id="avatar-preview" class="avatar-preview" alt="Avatar Preview">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-image"></i> Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+        window.uptime = Number('<%= uptime %>');
+        function msToTime(duration) {
+            let seconds = Math.floor((duration / 1000) % 60),
+                minutes = Math.floor((duration / (1000 * 60)) % 60),
+                hours = Math.floor((duration / (1000 * 60 * 60)) % 24),
+                days = Math.floor(duration / (1000 * 60 * 60 * 24));
+            return `${days > 0 ? days + 'g ' : ''}${hours}sa ${minutes}dk ${seconds}sn`;
+        }
+        document.getElementById('uptime-value').innerText = msToTime(window.uptime);
+        function botControl(action) {
+            let endpoint = '';
+            if (action === 'restart') endpoint = '/bot-settings/<%= guildID %>/restart';
+            else if (action === 'stop') { alert('Durdurma için process yöneticisi gereklidir!'); return; }
+            else if (action === 'start') { alert('Bot zaten çalışıyor!'); return; }
+            fetch(endpoint, { method: 'POST' })
+                .then(r => r.json()).then(d => {
+                    document.getElementById('bot-action-result').innerText = d.message || '';
+                });
+        }
+        document.getElementById('username-form').onsubmit = function(e) {
+            e.preventDefault();
+            const username = this.username.value;
+            fetch('/bot-settings/<%= guildID %>/set-username', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            }).then(r => r.json()).then(d => {
+                document.getElementById('bot-action-result').innerText = d.message || '';
+                if (d.success) setTimeout(() => location.reload(), 1000);
+            });
+        };
+        document.getElementById('avatar-form').onsubmit = function(e) {
+            e.preventDefault();
+            const avatarURL = this.avatarURL.value;
+            fetch('/bot-settings/<%= guildID %>/set-avatar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ avatarURL })
+            }).then(r => r.json()).then(d => {
+                document.getElementById('bot-action-result').innerText = d.message || '';
+                if (d.success) setTimeout(() => location.reload(), 1000);
+            });
+        };
+        document.querySelector('input[name="avatarURL"]').addEventListener('input', function() {
+            document.getElementById('avatar-preview').src = this.value || '<%= botAvatar %>';
+        });
+    </script>
+</body>
+<%- include('layout-blocker.ejs') %>
+</html> 

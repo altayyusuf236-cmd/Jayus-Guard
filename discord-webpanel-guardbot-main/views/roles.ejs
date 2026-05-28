@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rol Yönetimi - Guard Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5865f2;
+            --secondary-color: #2c2f33;
+            --accent-color: #7289da;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --border-color: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .server-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .server-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--danger-color), #d32f2f);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 71, 71, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .logout-btn i {
+            font-size: 1rem;
+        }
+
+        /* Roles Grid */
+        .roles-section {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .roles-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .roles-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .roles-count {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .role-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .role-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+
+        .role-id {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .role-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .role-permissions {
+            margin-bottom: 15px;
+        }
+
+        .permissions-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .permission-tag {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .role-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 500;
+        }
+
+        .edit-btn {
+            background: linear-gradient(45deg, var(--primary-color), #2d4a7a);
+            color: white;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .delete-btn {
+            background: linear-gradient(45deg, var(--danger-color), #7a2d2d);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(240, 71, 71, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar">
+            <div class="bot-name"><%= botUsername %></div>
+            <div class="bot-status">
+                <span id="guardStatus" class="badge <%= guardEnabled ? 'bg-success' : 'bg-danger' %>">
+                    <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                </span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/guard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-shield-halved nav-icon"></i>
+                    Guard Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/logs/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-list-alt nav-icon"></i>
+                    Log Kayıtları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/safe-users/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Güvenli Kullanıcılar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/roles/<%= guildID %>" class="nav-link active">
+                    <i class="fas fa-user-tag nav-icon"></i>
+                    Rol Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/channels/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-hashtag nav-icon"></i>
+                    Kanal Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/bot-settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-robot nav-icon"></i>
+                    Bot Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    Genel Ayarlar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">Rol Yönetimi</h1>
+                <div class="server-info">
+                    <img src="<%= guild.iconURL({ size: 128, extension: 'png' }) || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt="Server Icon" class="server-icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="server-details">
+                        <h4><%= guild.name %></h4>
+                        <p><%= guild.memberCount %> üye</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+
+        <!-- Roles Section -->
+        <div class="roles-section">
+            <div class="roles-header">
+                <div class="roles-title">Sunucu Rolleri</div>
+                <div class="roles-count"><%= guild.roles.cache.size %> rol</div>
+            </div>
+            <form action="/roles/<%= guildID %>/add-role" method="POST" style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center;">
+                <input type="text" name="roleName" class="form-input" placeholder="Yeni rol adı" required style="max-width: 250px;">
+                <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Rol Ekle</button>
+            </form>
+
+            <div class="roles-grid">
+                <% guild.roles.cache.sort((a, b) => b.position - a.position).forEach(role => { %>
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-color" style="background-color: <%= role.hexColor %>"></div>
+                            <div class="role-info">
+                                <div class="role-name"><%= role.name %></div>
+                                <div class="role-id"><%= role.id %></div>
+                            </div>
+                        </div>
+                        
+                        <div class="role-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Pozisyon:</span>
+                                <span class="detail-value"><%= role.position %></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Üye Sayısı:</span>
+                                <span class="detail-value"><%= role.members.size %></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Renk:</span>
+                                <span class="detail-value"><%= role.hexColor %></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Mentionable:</span>
+                                <span class="detail-value"><%= role.mentionable ? 'Evet' : 'Hayır' %></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Görünür:</span>
+                                <span class="detail-value"><%= role.hoist ? 'Evet' : 'Hayır' %></span>
+                            </div>
+                        </div>
+                        
+                        <div class="role-permissions">
+                            <div class="permissions-title">Önemli İzinler:</div>
+                            <div class="permissions-list">
+                                <% 
+                                const importantPermissions = [
+                                    'Administrator', 'ManageGuild', 'ManageRoles', 'ManageChannels',
+                                    'KickMembers', 'BanMembers', 'ManageMessages', 'ManageWebhooks'
+                                ];
+                                const rolePermissions = role.permissions.toArray();
+                                const importantRolePermissions = rolePermissions.filter(p => importantPermissions.includes(p));
+                                %>
+                                <% if (importantRolePermissions.length > 0) { %>
+                                    <% importantRolePermissions.slice(0, 5).forEach(permission => { %>
+                                        <span class="permission-tag"><%= permission %></span>
+                                    <% }); %>
+                                    <% if (importantRolePermissions.length > 5) { %>
+                                        <span class="permission-tag">+<%= importantRolePermissions.length - 5 %> daha</span>
+                                    <% } %>
+                                <% } else { %>
+                                    <span class="permission-tag">Özel izin yok</span>
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <div class="role-actions">
+                            <button class="role-btn edit-btn" onclick="editRole('<%= role.id %>')">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
+                            <button class="role-btn btn btn-info" onclick="showRoleDetail('<%= role.id %>')">
+                                <i class="fas fa-info-circle"></i> Detay
+                            </button>
+                            <% if (!role.managed && role.id !== guild.id) { %>
+                                <form action="/roles/<%= guildID %>/delete-role/<%= role.id %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="role-btn delete-btn" onclick="return confirm('Bu rolü silmek istediğinizden emin misiniz?')">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <button class="role-btn delete-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                    <i class="fas fa-lock"></i> Kilitli
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rol Detay Modalı -->
+    <div class="modal fade" id="roleDetailModal" tabindex="-1" aria-labelledby="roleDetailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#23272a;color:white;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="roleDetailModalLabel">Rol Detayları</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          <div class="modal-body" id="roleDetailContent">
+            <div class="text-center">Yükleniyor...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rol Düzenle Modalı -->
+    <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#23272a;color:white;">
+          <form id="editRoleForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editRoleModalLabel">Rolü Düzenle</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body" id="editRoleContent">
+              <div class="text-center">Yükleniyor...</div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+              <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        function editRole(roleId) {
+            // Rolü sayfadaki rollerden bul
+            const card = Array.from(document.querySelectorAll('.role-card')).find(card => card.querySelector('.role-id').textContent === roleId);
+            if (!card) return;
+            const name = card.querySelector('.role-name').textContent;
+            const position = card.querySelector('.detail-value').textContent;
+            const color = card.querySelector('.role-color').style.backgroundColor;
+            const mentionable = card.querySelectorAll('.detail-value')[3].textContent.trim() === 'Evet';
+            const hoist = card.querySelectorAll('.detail-value')[4].textContent.trim() === 'Evet';
+            // Önemli izinler
+            const importantPermissions = [
+                'Administrator', 'ManageGuild', 'ManageRoles', 'ManageChannels',
+                'KickMembers', 'BanMembers', 'ManageMessages', 'ManageWebhooks'
+            ];
+            const rolePermissions = Array.from(card.querySelectorAll('.permission-tag')).map(e => e.textContent);
+            // Modal içeriğini hazırla
+            let html = `<div class='mb-3'><label class='form-label'>Rol Adı</label><input type='text' name='name' class='form-control' value='${name}' required></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Pozisyon</label><input type='number' name='position' class='form-control' value='${position}' required></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Renk</label><input type='color' name='color' class='form-control-color' value='${rgbToHex(color) || '#000000'}'></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Mentionlanabilir</label> <select name='mentionable' class='form-control'><option value='false' ${!mentionable ? 'selected' : ''}>Hayır</option><option value='true' ${mentionable ? 'selected' : ''}>Evet</option></select></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Görünür (Hoist)</label> <select name='hoist' class='form-control'><option value='false' ${!hoist ? 'selected' : ''}>Hayır</option><option value='true' ${hoist ? 'selected' : ''}>Evet</option></select></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Önemli İzinler</label><div class='row'>`;
+            importantPermissions.forEach(perm => {
+                const checked = rolePermissions.includes(perm) ? 'checked' : '';
+                html += `<div class='col-6'><label><input type='checkbox' name='permissions' value='${perm}' ${checked}> ${perm}</label></div>`;
+            });
+            html += `</div></div>`;
+            html += `<input type='hidden' name='roleId' value='${roleId}'>`;
+            document.getElementById('editRoleContent').innerHTML = html;
+            var modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
+            modal.show();
+            // Form submit
+            document.getElementById('editRoleForm').onsubmit = function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                data.permissions = formData.getAll('permissions');
+                fetch(`/roles/<%= guildID %>/edit-role/${roleId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Rol güncellenemedi: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                });
+            };
+        }
+
+        function deleteRole(roleId, roleName) {
+            if (confirm(`"${roleName}" rolünü silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) {
+                // Burada rol silme işlemi yapılacak
+                alert('Rol silme özelliği yakında eklenecek!\nRol ID: ' + roleId);
+            }
+        }
+
+        function showRoleDetail(roleId) {
+            // Rol detaylarını sayfadaki rollerden bul
+            const role = Array.from(document.querySelectorAll('.role-card')).map(card => {
+                const id = card.querySelector('.role-id').textContent;
+                if (id === roleId) {
+                    return {
+                        name: card.querySelector('.role-name').textContent,
+                        id: id,
+                        position: card.querySelector('.detail-value').textContent,
+                        color: card.querySelector('.role-color').style.backgroundColor,
+                        memberCount: card.querySelectorAll('.detail-value')[1].textContent,
+                        mentionable: card.querySelectorAll('.detail-value')[3].textContent,
+                        hoist: card.querySelectorAll('.detail-value')[4].textContent,
+                        permissions: Array.from(card.querySelectorAll('.permission-tag')).map(e => e.textContent)
+                    };
+                }
+            }).filter(Boolean)[0];
+            
+            // Modal içeriğini hazırla
+            let html = `<div class='mb-3'><b>Rol Adı:</b> ${role.name}<br>
+            <b>ID:</b> ${role.id}<br>
+            <b>Pozisyon:</b> ${role.position}<br>
+            <b>Üye Sayısı:</b> ${role.memberCount}<br>
+            <b>Renk:</b> ${role.color}<br>
+            <b>Mentionable:</b> ${role.mentionable}<br>
+            <b>Görünür:</b> ${role.hoist}<br>
+            <b>Önemli İzinler:</b> ${role.permissions.join(', ')}</div>`;
+            html += `<div><b>İşlem Geçmişi:</b><ul id='roleLogList'><li>Yükleniyor...</li></ul></div>`;
+            document.getElementById('roleDetailContent').innerHTML = html;
+            // Modalı aç
+            var modal = new bootstrap.Modal(document.getElementById('roleDetailModal'));
+            modal.show();
+            // Logları çek
+            fetch(`/roles/<%= guildID %>/role-history/${role.id}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success && data.logs.length > 0) {
+                  document.getElementById('roleLogList').innerHTML = data.logs.map(log => `<li>${new Date(log.createdAt).toLocaleString('tr-TR')} - ${log.description}</li>`).join('');
+                } else {
+                  document.getElementById('roleLogList').innerHTML = '<li>Kayıt yok.</li>';
+                }
+              });
+        }
+
+        // Yardımcı: rgb(…) -> #hex
+        function rgbToHex(rgb) {
+            if (!rgb) return '#000000';
+            const result = rgb.match(/\d+/g);
+            if (!result || result.length < 3) return '#000000';
+            return '#' + ((1 << 24) + (parseInt(result[0]) << 16) + (parseInt(result[1]) << 8) + parseInt(result[2])).toString(16).slice(1, 7);
+        }
+    </script>
+</body>
+<%- include('layout-blocker.ejs') %>
+</html> 

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güvenli Kullanıcılar - Guard Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5865f2;
+            --secondary-color: #2c2f33;
+            --accent-color: #7289da;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --border-color: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .server-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .server-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--danger-color), #d32f2f);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 71, 71, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .logout-btn i {
+            font-size: 1rem;
+        }
+
+        /* Add User Section */
+        .add-user-section {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--success-color), #2d5a2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .add-user-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .add-btn {
+            background: linear-gradient(45deg, var(--success-color), #2d5a2d);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 181, 129, 0.3);
+        }
+
+        /* Users Grid */
+        .users-section {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .users-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .users-count {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 280px;
+        }
+
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+
+        .user-id {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .user-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .remove-btn {
+            background: linear-gradient(45deg, var(--danger-color), #7a2d2d);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .remove-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(240, 71, 71, 0.3);
+        }
+
+        .view-btn {
+            background: linear-gradient(45deg, var(--primary-color), #2d4a7a);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .empty-description {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .add-user-form {
+                flex-direction: column;
+            }
+
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+        /* User Profile Modal Styles */
+        .user-profile-card {
+            color: var(--text-primary);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-avatar-section {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-color);
+            object-fit: cover;
+        }
+
+        .profile-status {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.online {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .profile-username {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .profile-id {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .profile-details {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .detail-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-section h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .roles-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .role-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modal Override */
+        .modal-content {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        .modal-body {
+            color: var(--text-primary) !important;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar">
+            <div class="bot-name"><%= botUsername %></div>
+            <div class="bot-status">
+                <span id="guardStatus" class="badge <%= guardEnabled ? 'bg-success' : 'bg-danger' %>">
+                    <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                </span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/guard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-shield-halved nav-icon"></i>
+                    Guard Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/logs/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-list-alt nav-icon"></i>
+                    Log Kayıtları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/safe-users/<%= guildID %>" class="nav-link active">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Güvenli Kullanıcılar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/roles/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-tag nav-icon"></i>
+                    Rol Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/channels/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-hashtag nav-icon"></i>
+                    Kanal Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/bot-settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-robot nav-icon"></i>
+                    Bot Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    Genel Ayarlar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">Güvenli Kullanıcılar</h1>
+                <div class="server-info">
+                    <img src="<%= guild.iconURL({ size: 128, extension: 'png' }) || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt="Server Icon" class="server-icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="server-details">
+                        <h4><%= guild.name %></h4>
+                        <p><%= guild.memberCount %> üye</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+
+        <!-- Add User Section -->
+        <div class="add-user-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="section-title">Güvenli Kullanıcı Ekle</div>
+            </div>
+            
+            <form class="add-user-form" method="POST" action="/safe-users/<%= guildID %>/add">
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı ID</label>
+                    <input type="text" name="userID" class="form-input" placeholder="Kullanıcı ID'sini girin" required>
+                    <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px; display: block;">
+                        Kullanıcı ID'sini girdikten sonra Discord'dan otomatik olarak bilgiler çekilecektir.
+                    </small>
+                </div>
+                <button type="submit" class="add-btn">
+                    <i class="fas fa-plus"></i> Ekle
+                </button>
+            </form>
+        </div>
+
+        <!-- Users Section -->
+        <div class="users-section">
+            <div class="users-header">
+                <div class="users-title">Güvenli Kullanıcı Listesi</div>
+                <div class="users-count"><%= safeUsers.length %> kullanıcı</div>
+            </div>
+
+            <% if (safeUsers.length === 0) { %>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="empty-title">Henüz güvenli kullanıcı yok</div>
+                    <div class="empty-description">
+                        Yukarıdaki formu kullanarak güvenli kullanıcı ekleyebilirsiniz.<br>
+                        Bu kullanıcılar guard sistemi tarafından korunacaktır.
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="users-grid">
+                    <% safeUsers.forEach(user => { %>
+                        <div class="user-card">
+                            <div class="user-header">
+                                <img src="<%= user.avatarURL || `https://cdn.discordapp.com/embed/avatars/${user.discriminator ? user.discriminator % 5 : 0}.png` %>" 
+                                     alt="User Avatar" class="user-avatar" 
+                                     onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <div class="user-info">
+                                    <div class="user-name">
+                                        <%= user.displayName || user.username %>
+                                        <% if (user.discriminator && user.discriminator !== '0000') { %>
+                                            <span style="color: var(--text-secondary); font-size: 0.8rem;">#<%= user.discriminator %></span>
+                                        <% } %>
+                                    </div>
+                                    <div class="user-id">#<%= user.numId %> - <%= user.id %></div>
+                                </div>
+                            </div>
+                            
+                            <div class="user-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Kullanıcı Adı:</span>
+                                    <span class="detail-value"><%= user.username %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Sunucu Adı:</span>
+                                    <span class="detail-value"><%= user.displayName || user.username %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Katılım Tarihi:</span>
+                                    <span class="detail-value"><%= new Date(user.joinedAt).toLocaleDateString('tr-TR') %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Eklenme Tarihi:</span>
+                                    <span class="detail-value"><%= new Date(user.addedAt).toLocaleDateString('tr-TR') %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Durum:</span>
+                                    <span class="detail-value" style="color: var(--success-color);">
+                                        <i class="fas fa-shield-alt"></i> Korunuyor
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="user-actions">
+                                <button class="view-btn" onclick="viewUser('<%= user.id %>')">
+                                    <i class="fas fa-eye"></i> Görüntüle
+                                </button>
+                                <button type="button" class="remove-btn" onclick="removeSafeUser('<%= user.numId %>', this)">
+                                    <i class="fas fa-trash"></i> Çıkar
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Kullanıcı Detay Modalı -->
+    <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#23272a;color:white;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="userDetailModalLabel">Kullanıcı Profili</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+          <div class="modal-body" id="userDetailContent">
+            <div class="text-center">Yükleniyor...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        function removeSafeUser(numId, btn) {
+            if (!numId) {
+                alert('Kullanıcı numarası bulunamadı!');
+                return;
+            }
+            if (!confirm('Bu kullanıcıyı güvenli listeden çıkarmak istediğinizden emin misiniz?')) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Çıkarılıyor...';
+            fetch(`/safe-users/<%= guildID %>/remove`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `numId=${encodeURIComponent(numId)}`
+            })
+            .then(r => {
+                if (r.redirected || r.ok) {
+                    // Kartı DOM'dan kaldır
+                    const card = btn.closest('.user-card');
+                    card.parentNode.removeChild(card);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Çıkar';
+                    alert('Kullanıcı silinemedi!');
+                }
+            });
+        }
+
+        function viewUser(userId) {
+            document.getElementById('userDetailContent').innerHTML = '<div class="text-center">Yükleniyor...</div>';
+            var modal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+            modal.show();
+            fetch(`/safe-users/<%= guildID %>/user/${userId}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success) {
+                  const u = data.user;
+                  let html = `<div class='row'>
+                    <div class='col-md-3 text-center'>
+                      <img src='${u.avatarURL || 'https://cdn.discordapp.com/embed/avatars/0.png'}' class='rounded-circle mb-2' style='width:100px;height:100px;border:3px solid #5865f2;'>
+                      <div style='font-weight:600;font-size:1.1rem;'>${u.displayName || u.username}</div>
+                      <div style='color:#b9bbbe;'>${u.username}#${u.discriminator}</div>
+                      <div style='font-size:0.9rem;'>ID: ${u.id}</div>
+                                    </div>
+                    <div class='col-md-9'>
+                      <div class='mb-2'><b>Sunucu Adı:</b> ${u.displayName || u.username}</div>
+                      <div class='mb-2'><b>Katılım Tarihi:</b> ${u.joinedAt ? new Date(u.joinedAt).toLocaleString('tr-TR') : '-'}</div>
+                      <div class='mb-2'><b>Eklenme Tarihi:</b> ${u.addedAt && !isNaN(new Date(u.addedAt)) ? new Date(u.addedAt).toLocaleString('tr-TR') : '-'} </div>
+                      <div class='mb-2'><b>Discord Hesabı Oluşturulma:</b> ${u.createdAt ? new Date(u.createdAt).toLocaleString('tr-TR') : '-'}</div>
+                      <div class='mb-2'><b>Roller:</b> <span class='roles-list'>${u.roles && u.roles.length > 0 ? u.roles.map(r => `<span class='role-tag' style='background:${r.color};color:white;'>${r.name}</span>`).join(' ') : 'Yok'}</span></div>
+                      <div class='mb-2'><b>Yetkiler:</b> ${u.permissions && u.permissions.length > 0 ? u.permissions.join(', ') : 'Yok'}</div>
+                      <div class='mb-2'><b>Bot mu:</b> ${u.isBot ? 'Evet' : 'Hayır'} | <b>Doğrulanmış:</b> ${u.isVerified ? 'Evet' : 'Hayır'}</div>
+                      <div class='mb-2'><b>Sunucu:</b> ${u.guildName || '-'} <img src='${u.guildIcon || ''}' style='width:24px;height:24px;border-radius:6px;vertical-align:middle;'></div>
+                      ${data.fallback ? `<div class='alert alert-warning mt-2'>Discord'dan veri alınamadı, veritabanı yedeği gösteriliyor.</div>` : ''}
+                                </div>
+                  </div>`;
+                  document.getElementById('userDetailContent').innerHTML = html;
+                } else {
+                  document.getElementById('userDetailContent').innerHTML = `<div class='alert alert-danger'>Kullanıcı bilgileri alınamadı: ${data.error || 'Bilinmeyen hata'}<br><br><button class='btn btn-secondary' data-bs-dismiss='modal'>Kapat</button></div>`;
+                }
+              });
+        }
+
+        // AJAX ile kullanıcı ekleme ve listeyi güncelleme
+        document.querySelector('.add-user-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('.add-btn');
+            const originalText = submitBtn.innerHTML;
+            const input = this.querySelector('input[name="userID"]');
+            const userId = input.value.trim();
+            if (!userId) return;
+            submitBtn.innerHTML = '<div class="loading"></div> Ekleniyor...';
+            submitBtn.disabled = true;
+            fetch(`/safe-users/<%= guildID %>/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `userID=${encodeURIComponent(userId)}`
+            })
+            .then(r => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                input.value = '';
+                if (r.redirected || r.ok) {
+                    // Sayfayı yenilemeden kullanıcı listesini güncelle
+                    window.location.reload();
+                } else {
+                    alert('Kullanıcı eklenemedi!');
+                }
+            });
+        });
+    </script>
+</body>
+<%- include('layout-blocker.ejs') %>
+</html> 

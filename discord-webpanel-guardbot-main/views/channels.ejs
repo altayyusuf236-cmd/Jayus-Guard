@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanal Yönetimi - Guard Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5865f2;
+            --secondary-color: #2c2f33;
+            --accent-color: #7289da;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --border-color: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .server-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .server-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--danger-color), #d32f2f);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 71, 71, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .logout-btn i {
+            font-size: 1rem;
+        }
+
+        /* Channels Section */
+        .channels-section {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .channels-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .channels-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .channels-count {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .channel-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .channel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .channel-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(45deg, var(--primary-color), #2d4a7a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .channel-info {
+            flex: 1;
+        }
+
+        .channel-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+
+        .channel-id {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .channel-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .channel-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .channel-btn {
+            flex: 1;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 500;
+        }
+
+        .edit-btn {
+            background: linear-gradient(45deg, var(--primary-color), #2d4a7a);
+            color: white;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .delete-btn {
+            background: linear-gradient(45deg, var(--danger-color), #7a2d2d);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(240, 71, 71, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .channels-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="<%= botAvatar %>" alt="Bot Avatar" class="bot-avatar">
+            <div class="bot-name"><%= botUsername %></div>
+            <div class="bot-status">
+                <span id="guardStatus" class="badge <%= guardEnabled ? 'bg-success' : 'bg-danger' %>">
+                    <%= guardEnabled ? 'Aktif' : 'Pasif' %>
+                </span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/guard/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-shield-halved nav-icon"></i>
+                    Guard Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/logs/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-list-alt nav-icon"></i>
+                    Log Kayıtları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/safe-users/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Güvenli Kullanıcılar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/roles/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-user-tag nav-icon"></i>
+                    Rol Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/channels/<%= guildID %>" class="nav-link active">
+                    <i class="fas fa-hashtag nav-icon"></i>
+                    Kanal Yönetimi
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/bot-settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-robot nav-icon"></i>
+                    Bot Ayarları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings/<%= guildID %>" class="nav-link">
+                    <i class="fas fa-cog nav-icon"></i>
+                    Genel Ayarlar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1 class="page-title">Kanal Yönetimi</h1>
+                <div class="server-info">
+                    <img src="<%= guild.iconURL({ size: 128, extension: 'png' }) || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt="Server Icon" class="server-icon" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="server-details">
+                        <h4><%= guild.name %></h4>
+                        <p><%= guild.memberCount %> üye</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+
+        <!-- Channels Section -->
+        <div class="channels-section">
+            <div class="channels-header">
+                <div class="channels-title">Sunucu Kanalları</div>
+                <div class="channels-count"><%= guild.channels.cache.size %> kanal</div>
+            </div>
+            <form action="/channels/<%= guildID %>/add-channel" method="POST" style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center;">
+                <input type="text" name="channelName" class="form-input" placeholder="Yeni kanal adı" required style="max-width: 250px;">
+                <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Kanal Ekle</button>
+            </form>
+
+            <div class="channels-grid">
+                <% guild.channels.cache.sort((a, b) => a.position - b.position).forEach(channel => { %>
+                    <div class="channel-card">
+                        <div class="channel-header">
+                            <div class="channel-icon">
+                                <% if (channel.type === 0) { %>
+                                    <i class="fas fa-hashtag"></i>
+                                <% } else if (channel.type === 2) { %>
+                                    <i class="fas fa-volume-up"></i>
+                                <% } else if (channel.type === 4) { %>
+                                    <i class="fas fa-folder"></i>
+                                <% } else { %>
+                                    <i class="fas fa-comment"></i>
+                                <% } %>
+                            </div>
+                            <div class="channel-info">
+                                <div class="channel-name"><%= channel.name %></div>
+                                <div class="channel-id"><%= channel.id %></div>
+                            </div>
+                        </div>
+                        
+                        <div class="channel-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Tip:</span>
+                                <span class="detail-value">
+                                    <% if (channel.type === 0) { %>
+                                        Metin Kanalı
+                                    <% } else if (channel.type === 2) { %>
+                                        Ses Kanalı
+                                    <% } else if (channel.type === 4) { %>
+                                        Kategori
+                                    <% } else { %>
+                                        Diğer
+                                    <% } %>
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Pozisyon:</span>
+                                <span class="detail-value"><%= channel.position %></span>
+                            </div>
+                            <% if (channel.type === 0) { %>
+                                <div class="detail-item">
+                                    <span class="detail-label">Slowmode:</span>
+                                    <span class="detail-value"><%= channel.rateLimitPerUser || 0 %> saniye</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">NSFW:</span>
+                                    <span class="detail-value"><%= channel.nsfw ? 'Evet' : 'Hayır' %></span>
+                                </div>
+                            <% } %>
+                            <% if (channel.type === 2) { %>
+                                <div class="detail-item">
+                                    <span class="detail-label">Kullanıcı Limiti:</span>
+                                    <span class="detail-value"><%= channel.userLimit || 'Sınırsız' %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Bitrate:</span>
+                                    <span class="detail-value"><%= channel.bitrate / 1000 %> kbps</span>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="channel-actions">
+                            <button class="channel-btn btn btn-info" onclick="showChannelDetail('<%= channel.id %>')">
+                                <i class="fas fa-info-circle"></i> Detay
+                            </button>
+                            <button class="channel-btn edit-btn" onclick="editChannel('<%= channel.id %>')">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
+                            <form action="/channels/<%= guildID %>/delete-channel/<%= channel.id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="channel-btn delete-btn" onclick="return confirm('Bu kanalı silmek istediğinizden emin misiniz?')">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanal Detay Modalı -->
+    <div class="modal fade" id="channelDetailModal" tabindex="-1" aria-labelledby="channelDetailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#23272a;color:white;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="channelDetailModalLabel">Kanal Detayları</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          <div class="modal-body" id="channelDetailContent">
+            <div class="text-center">Yükleniyor...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kanal Düzenle Modalı -->
+    <div class="modal fade" id="editChannelModal" tabindex="-1" aria-labelledby="editChannelModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#23272a;color:white;">
+          <form id="editChannelForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editChannelModalLabel">Kanalı Düzenle</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body" id="editChannelContent">
+              <div class="text-center">Yükleniyor...</div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+              <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        function editChannel(channelId) {
+            // Kanalı sayfadaki kanallardan bul
+            const card = Array.from(document.querySelectorAll('.channel-card')).find(card => card.querySelector('.channel-id').textContent === channelId);
+            if (!card) return;
+            const name = card.querySelector('.channel-name').textContent;
+            const position = card.querySelector('.detail-value').textContent;
+            // Sadece metin kanalı için örnek (gerekirse diğer türler için genişlet)
+            let slowmode = 0, nsfw = false;
+            const slowmodeEl = Array.from(card.querySelectorAll('.detail-label')).find(e => e.textContent.includes('Slowmode:'));
+            if (slowmodeEl) slowmode = parseInt(slowmodeEl.parentElement.querySelector('.detail-value').textContent) || 0;
+            const nsfwEl = Array.from(card.querySelectorAll('.detail-label')).find(e => e.textContent.includes('NSFW:'));
+            if (nsfwEl) nsfw = nsfwEl.parentElement.querySelector('.detail-value').textContent.trim() === 'Evet';
+            // Modal içeriğini hazırla
+            let html = `<div class='mb-3'><label class='form-label'>Kanal Adı</label><input type='text' name='name' class='form-control' value='${name}' required></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Pozisyon</label><input type='number' name='position' class='form-control' value='${position}' required></div>`;
+            html += `<div class='mb-3'><label class='form-label'>Slowmode (saniye)</label><input type='number' name='slowmode' class='form-control' value='${slowmode}' min='0'></div>`;
+            html += `<div class='mb-3'><label class='form-label'>NSFW</label> <select name='nsfw' class='form-control'><option value='false' ${!nsfw ? 'selected' : ''}>Hayır</option><option value='true' ${nsfw ? 'selected' : ''}>Evet</option></select></div>`;
+            // İzinler ve diğer alanlar eklenebilir
+            html += `<input type='hidden' name='channelId' value='${channelId}'>`;
+            document.getElementById('editChannelContent').innerHTML = html;
+            var modal = new bootstrap.Modal(document.getElementById('editChannelModal'));
+            modal.show();
+            // Form submit
+            document.getElementById('editChannelForm').onsubmit = function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch(`/channels/<%= guildID %>/edit-channel/${channelId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Kanal güncellenemedi: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                });
+            };
+        }
+
+        function deleteChannel(channelId, channelName) {
+            if (confirm(`"${channelName}" kanalını silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) {
+                // Burada kanal silme işlemi yapılacak
+                alert('Kanal silme özelliği yakında eklenecek!\nKanal ID: ' + channelId);
+            }
+        }
+
+        function showChannelDetail(channelId) {
+            // Kanal detaylarını sayfadaki kanallardan bul
+            const channel = Array.from(document.querySelectorAll('.channel-card')).map(card => {
+                const id = card.querySelector('.channel-id').textContent;
+                if (id === channelId) {
+                    return {
+                        name: card.querySelector('.channel-name').textContent,
+                        id: id,
+                        type: card.querySelector('.channel-type').textContent,
+                        category: card.querySelector('.channel-category') ? card.querySelector('.channel-category').textContent : '-',
+                        createdAt: card.querySelector('.channel-created') ? card.querySelector('.channel-created').textContent : '-',
+                        permissions: Array.from(card.querySelectorAll('.permission-tag')).map(e => e.textContent)
+                    };
+                }
+            }).filter(Boolean)[0];
+            
+            // Modal içeriğini hazırla
+            let html = `<div class='mb-3'><b>Kanal Adı:</b> ${channel.name}<br>
+            <b>ID:</b> ${channel.id}<br>
+            <b>Tür:</b> ${channel.type}<br>
+            <b>Kategori:</b> ${channel.category}<br>
+            <b>Oluşturulma:</b> ${channel.createdAt}<br>
+            <b>Önemli İzinler:</b> ${channel.permissions.join(', ')}</div>`;
+            html += `<div><b>İşlem Geçmişi:</b><ul id='channelLogList'><li>Yükleniyor...</li></ul></div>`;
+            document.getElementById('channelDetailContent').innerHTML = html;
+            // Modalı aç
+            var modal = new bootstrap.Modal(document.getElementById('channelDetailModal'));
+            modal.show();
+            // Logları çek
+            fetch(`/channels/<%= guildID %>/channel-history/${channel.id}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success && data.logs.length > 0) {
+                  document.getElementById('channelLogList').innerHTML = data.logs.map(log => `<li>${new Date(log.createdAt).toLocaleString('tr-TR')} - ${log.description}</li>`).join('');
+                } else {
+                  document.getElementById('channelLogList').innerHTML = '<li>Kayıt yok.</li>';
+                }
+              });
+        }
+    </script>
+</body>
+<%- include('layout-blocker.ejs') %>
+</html> 
