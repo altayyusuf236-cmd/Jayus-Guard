@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Safe = require('../schemas/safe');
 const Log = require('../schemas/logchannel');
-const Panel = require('../schemas/panel');
+const Panel = require('../schemas/Panel');
 
 module.exports = (client) => {
 
