@@ -4,7 +4,7 @@ const Safe = require('../schemas/safe');
 const Log = require('../schemas/logchannel');
 
 // ⚠️ Şema dosyanın adı küçük harfle 'panel.js' ise 'panel' yap kanka, Linux harfe duyarlıdır!
-const Panel = require('../schemas/panel'); 
+const Panel = require('../schemas/Panel'); 
 
 module.exports = (client) => {
 
