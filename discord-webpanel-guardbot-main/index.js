@@ -603,7 +603,12 @@ app.get('/api/guard-settings', async (req, res) => {
 });
 
 app.post('/api/guard-settings', async (req, res) => {
-  const { kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma } = req.body;
+  // Gelen verileri kontrol et: Eğer true veya 'on' ise true yap, gelmediyse (kapalıysa) direkt false yap!
+  const kanalKoruma = req.body.kanalKoruma === true || req.body.kanalKoruma === 'on';
+  const rolKoruma = req.body.rolKoruma === true || req.body.rolKoruma === 'on';
+  const emojiKoruma = req.body.emojiKoruma === true || req.body.emojiKoruma === 'on';
+  const banKickKoruma = req.body.banKickKoruma === true || req.body.banKickKoruma === 'on';
+
   const guildID = config.guildID;
   try {
     const updated = await Panel.findOneAndUpdate(
@@ -616,8 +621,6 @@ app.post('/api/guard-settings', async (req, res) => {
     res.status(500).json({ success: false, error: "Güncelleme hatası" });
   }
 });
-
-
 
 // 🔐 SADECE BİR KEZ ÇALIŞTIRILACAK KALICI HESAP OLUŞTURUCU
 app.get('/kalici-hesap-yarat', async (req, res) => {

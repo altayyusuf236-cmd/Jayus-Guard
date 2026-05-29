@@ -814,30 +814,44 @@
             }
         });
     </script>
-    // 🛡️ GÜVENLİK KORUMA AYARLARINI VERİTABANINA KAYDETME KODU
-document.getElementById('korumaKaydetBtn')?.addEventListener('click', async () => {
-    const kanalKoruma = document.querySelector('input[name="kanalKoruma"]').checked;
-    const rolKoruma = document.querySelector('input[name="rolKoruma"]').checked;
-    const emojiKoruma = document.querySelector('input[name="emojiKoruma"]').checked;
-    const banKickKoruma = document.querySelector('input[name="banKickKoruma"]').checked;
-
-    try {
-        const response = await fetch('/api/guard-settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma })
-        });
-        const data = await response.json();
-        if(data.success) {
-            alert('✅ Koruma ayarları başarıyla veritabanına kaydedildi kanka!');
-            window.location.reload();
-        } else {
-            alert('❌ Ayarlar kaydedilirken hata oluştu: ' + data.error);
-        }
-    } catch (err) {
-        alert('Sunucuya bağlanılamadı kanka: ' + err.message);
-    }
-});
 </body>
 <%- include('layout-blocker.ejs') %>
+<script>
+    // 🛡️ Koruma switch'leri değiştikçe otomatik olarak veritabanına kaydetme kodu
+    const guardInputs = ['kanalKoruma', 'rolKoruma', 'emojiKoruma', 'banKickKoruma'];
+    
+    guardInputs.forEach(name => {
+        const input = document.querySelector(`input[name="${name}"]`);
+        if (input) {
+            input.addEventListener('change', async () => {
+                // Tüm korumaların anlık durumlarını topla
+                const settingsData = {
+                    kanalKoruma: document.querySelector('input[name="kanalKoruma"]').checked,
+                    rolKoruma: document.querySelector('input[name="rolKoruma"]').checked,
+                    emojiKoruma: document.querySelector('input[name="emojiKoruma"]').checked,
+                    banKickKoruma: document.querySelector('input[name="banKickKoruma"]').checked
+                };
+
+                try {
+                    const response = await fetch('/api/guard-settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settingsData)
+                    });
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        alert('❌ Ayar kaydedilirken bir hata oluştu kanka!');
+                        // Hata olduysa switch'i eski haline geri çek
+                        input.checked = !input.checked;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('⚡ Sunucuyla iletişim kurulamadı!');
+                    input.checked = !input.checked;
+                }
+            });
+        }
+    });
+</script>
 </html> 
