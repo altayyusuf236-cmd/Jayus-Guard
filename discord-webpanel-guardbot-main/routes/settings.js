@@ -1,3 +1,5 @@
+router.get('/:guildID', async (req, res) => {
+    console.log("Settings sayfasına giriş isteği geldi: " + req.params.guildID); 
 const express = require('express');
 const router = express.Router();
 const Safe = require('../schemas/safe');
@@ -38,15 +40,27 @@ module.exports = (client) => {
       }
 
       // 💡 EKSİKLİK KONTROLÜ: EJS içinde hata çıkaran değişkenleri güvenceye alıyoruz
-      res.render('settings', {
-        guildID: guildID,
-        guild: guild,
-        botAvatar: client.user.displayAvatarURL() || '',
-        botUsername: client.user.username || 'Guard Bot',
-        guardEnabled: safeData.guardEnabled || false,
-        logChannelID: logData.channelID || '',
-        panel: panelData || { kanalKoruma: false, rolKoruma: false, emojiKoruma: false, banKickKoruma: false }
-      });
+      // routes/settings.js içindeki res.render kısmı bu şekilde olmalı:
+
+res.render('settings', {
+    guildID: guildID,
+    guild: guild,
+    botAvatar: client.user.displayAvatarURL() || '',
+    botUsername: client.user.username || 'Guard Bot',
+    guardEnabled: safeData.guardEnabled || false,
+    logChannelID: logData.channelID || '',
+    // Aşağıdaki kısım kritik: EJS'nin aradığı değişkenleri panel objesinden çekip gönderiyoruz
+    panel: panelData || { 
+        kanalKoruma: false, 
+        rolKoruma: false, 
+        emojiKoruma: false, 
+        banKickKoruma: false,
+        detailedLogs: false // <--- Bunu ekle
+    },
+    // EJS'de sadece "detailedLogs" diye çağırıyorsan onu da ayrıca gönder:
+    detailedLogs: panelData ? panelData.detailedLogs : false
+});
+
 
     } catch (err) {
       // 🚨 EĞER SAYFA AÇILMIYORSA HATAYI DİREKT TARAYICIYA BASIYORUZ:
