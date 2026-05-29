@@ -41,6 +41,7 @@ module.exports = (client) => {
     });
 
     router.post('/:guildID', async (req, res) => {
+       console.log("Gelen Veri:", req.body);
     const { guildID } = req.params;
     
     // 1. Buraya formdan gelen TÜM checkbox isimlerini ekledin mi?

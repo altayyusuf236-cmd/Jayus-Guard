@@ -12,10 +12,18 @@ module.exports = {
 
     const sub = args[0];
     const member = message.mentions.members.first();
-    let data = await Safe.findOne({ guildID: message.guild.id }) || { safeUsers: [] };
+    let data = await Safe.findOne({ guildID: message.guild.id });
 
 if (sub === "ekle") {
   if (!member) return message.reply("Birini etiketle!");
+  
+  // GÜVENLİK DUVARI: data yoksa veya safeUsers bir dizi değilse boş dizi yap
+  if (!data) data = { safeUsers: [] };
+  if (!data.safeUsers || !Array.isArray(data.safeUsers)) {
+    data.safeUsers = [];
+  }
+
+  // Artık asla .find() hatası veremez
   if (data.safeUsers.find(u => u.id === member.id)) return message.reply("❗ Zaten güvenli.");
 
   const verificationCode = Math.floor(100000 + Math.random() * 900000);
