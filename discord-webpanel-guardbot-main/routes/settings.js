@@ -41,34 +41,41 @@ module.exports = (client) => {
     });
 
     router.post('/:guildID', async (req, res) => {
-        const { guildID } = req.params;
-        const { logChannelID, kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma, detailedLogs, autoCleanLogs, autoBackup, twoFactorAuth } = req.body;
+    const { guildID } = req.params;
+    
+    // 1. Buraya formdan gelen TÜM checkbox isimlerini ekledin mi?
+    const { logChannelID, kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma, detailedLogs, autoCleanLogs, autoBackup, twoFactorAuth, ipRestriction, discordNotifications, emailNotifications } = req.body;
+    
+    try {
+        await Log.updateOne({ guildID }, { $set: { channelID: logChannelID || null } }, { upsert: true });
         
-        try {
-            await Log.updateOne({ guildID }, { $set: { channelID: logChannelID || null } }, { upsert: true });
-            
-            await Panel.findOneAndUpdate(
-                { guildID },
-                {
-                    $set: {
-                        kanalKoruma: kanalKoruma === 'on',
-                        rolKoruma: rolKoruma === 'on',
-                        emojiKoruma: emojiKoruma === 'on',
-                        banKickKoruma: banKickKoruma === 'on',
-                        detailedLogs: detailedLogs === 'on',
-                        autoCleanLogs: autoCleanLogs === 'on',
-                        autoBackup: autoBackup === 'on',
-                        twoFactorAuth: twoFactorAuth === 'on'
-                    }
-                },
-                { upsert: true, new: true }
-            );
-            res.redirect(`/settings/${guildID}`);
-        } catch (err) {
-            console.error(err);
-            res.status(500).send('Ayarlar kaydedilemedi.');
-        }
-    });
+        await Panel.findOneAndUpdate(
+            { guildID },
+            {
+                $set: {
+                    // 2. Buraya hepsini ekledin mi? (Aşağıdaki gibi)
+                    kanalKoruma: kanalKoruma === 'on',
+                    rolKoruma: rolKoruma === 'on',
+                    emojiKoruma: emojiKoruma === 'on',
+                    banKickKoruma: banKickKoruma === 'on',
+                    detailedLogs: detailedLogs === 'on',
+                    autoCleanLogs: autoCleanLogs === 'on',
+                    autoBackup: autoBackup === 'on',
+                    twoFactorAuth: twoFactorAuth === 'on'
+                    ipRestriction: ipRestriction === 'on'
+                    discordNotifications: discordNotifications === 'on'
+                    emailNotifications: emailNotifications === 'on'
+                }
+            },
+            { upsert: true, new: true }
+        );
+        res.redirect(`/settings/${guildID}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Hata!');
+    }
+});
+
 
     return router;
 };

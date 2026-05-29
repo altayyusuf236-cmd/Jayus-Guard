@@ -673,7 +673,7 @@
                             <div class="setting-description">Eski logları otomatik temizle</div>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" name="autoCleanLogs">
+                            <input type="checkbox" name="autoCleanLogs"<%= panel.autoCleanLogs ? 'checked' : '' %>> >
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -699,7 +699,7 @@
                         <div class="setting-description">Sunucu ayarlarını otomatik yedekle</div>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="autoBackup">
+                        <input type="checkbox" name="autoBackup" <%= panel.autoBackup ? 'checked' : '' %>> >
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -748,7 +748,7 @@
                         <div class="setting-description">Panel erişimi için 2FA gerektir</div>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="twoFactorAuth">
+                        <input type="checkbox" name="twoFactorAuth" <%= panel.twoFactorAuth ? 'checked' : '' %>> >
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -759,7 +759,7 @@
                         <div class="setting-description">Belirli IP'lerden erişime izin ver</div>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="ipRestriction">
+                        <input type="checkbox" name="ipRestriction" <%= panel.ipRestriction ? 'checked' : '' %>> >
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -842,7 +842,7 @@
                         <div class="setting-description">Önemli olayları Discord'da bildir</div>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="discordNotifications">
+                        <input type="checkbox" name="discordNotifications" <%= panel.discordNotifications ? 'checked' : '' %>> >
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -853,7 +853,7 @@
                         <div class="setting-description">Kritik olayları e-posta ile bildir</div>
                     </div>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="emailNotifications">
+                        <input type="checkbox" name="emailNotifications" <%= panel.emailNotifications ? 'checked' : '' %>> >
                         <span class="slider"></span>
                     </label>
                 </div>
