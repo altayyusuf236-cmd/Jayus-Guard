@@ -1,89 +1,77 @@
 const express = require('express');
 const router = express.Router();
-const Safe = require('../schemas/safe');
-const Panel = require('../schemas/Panel');
+const Safe = require('../schemas/safe'); // Bot komutlarının (system.js) kullandığı şema
+const config = require('../config');
 
-// Yardımcı log fonksiyonu
-async function sendLogToChannel(bot, guildID, message) {
-  try {
-    const Safe = require('../schemas/safe');
-    const safeData = await Safe.findOne({ guildID });
-    const logChannelID = safeData && safeData.logChannelID;
-    if (!logChannelID) return;
-    const guild = bot.guilds.cache.get(guildID);
-    if (!guild) return;
-    const channel = guild.channels.cache.get(logChannelID);
-    if (!channel) return;
-    await channel.send(message);
-  } catch (err) {
-    console.error('Log kanalı mesaj hatası:', err);
-  }
-}
-
-// Genel ayarları kaydet (örnek endpoint)
-router.post('/:guildID', async (req, res) => {
-  const guildID = req.params.guildID;
-  const bot = req.app.get('client');
-  // Panel koruma ayarlarını al
-  const { logChannelID, kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma } = req.body;
-  try {
-    await Safe.updateOne(
-      { guildID },
-      { $set: { logChannelID } },
-      { upsert: true }
-    );
-    // Panel koruma ayarlarını güncelle
-    await Panel.updateOne(
-      { guildID },
-      {
-        $set: {
-          kanalKoruma: !!kanalKoruma,
-          rolKoruma: !!rolKoruma,
-          emojiKoruma: !!emojiKoruma,
-          banKickKoruma: !!banKickKoruma
-        }
-      },
-      { upsert: true }
-    );
-    await sendLogToChannel(bot, guildID, `⚙️ Genel ayarlar panelden güncellendi. (Log kanalı: <#${logChannelID}>)`);
-    res.redirect(`/settings/${guildID}`);
-  } catch (err) {
-    res.status(500).send('Sunucu hatası');
-  }
-});
-
+// GET: Ayarları veritabanından çek ve sayfaya gönder
 router.get('/:guildID', async (req, res) => {
-  const guildID = req.params.guildID;
-  
-  try {
-    // Bot bilgilerini al
-    const bot = req.app.get('client');
-    const guild = bot.guilds.cache.get(guildID);
+    const { guildID } = req.params;
+    const client = req.app.get('client');
     
-    if (!guild) {
-      return res.status(404).send('Sunucu bulunamadı');
-    }
+    try {
+        const guild = await client.guilds.fetch(guildID).catch(() => null);
+        if (!guild) return res.status(404).send("Sunucu bulunamadı.");
 
-    // Guard ayarlarını al
-    const safeData = await Safe.findOne({ guildID }) || {};
-    
-    // Panel koruma ayarlarını al
-    const panel = await Panel.findOne({ guildID }) || {};
-    res.render('settings', {
-      guildID,
-      guild,
-      botUsername: bot.user.username,
-      botAvatar: bot.user.displayAvatarURL(),
-      botId: bot.user.id,
-      guardEnabled: safeData.guardEnabled || false,
-      safeUsers: safeData.safeUsers || [],
-      logChannelID: safeData.logChannelID || '',
-      panel
-    });
-  } catch (error) {
-    console.error('Settings error:', error);
-    res.status(500).send('Sunucu hatası');
-  }
+        // Botun kullandığı ortak Safe verisini çekiyoruz
+        let data = await Safe.findOne({ guildID });
+        if (!data) {
+            data = await Safe.create({ guildID });
+        }
+
+        res.render('settings', {
+            guildID,
+            guild,
+            botAvatar: client.user.displayAvatarURL(),
+            botUsername: client.user.username,
+            guardEnabled: data.guardEnabled || false,
+            logChannelID: data.logChannelID || '',
+            detailedLogs: data.detailedLogs || false,
+            autoCleanLogs: data.autoCleanLogs || false,
+            autoBackup: data.autoBackup || false,
+            twoFactorAuth: data.twoFactorAuth || false,
+            ipRestriction: data.ipRestriction || false
+        });
+    } catch (err) {
+        console.error("Ayarlar yüklenirken hata:", err);
+        res.status(500).send('Sunucu hatası oluştu.');
+    }
 });
 
-module.exports = router; 
+// POST: Panelden gelen tüm ayarları tek seferde kaydet
+router.post('/:guildID', async (req, res) => {
+    const { guildID } = req.params;
+    const { logChannelID } = req.body;
+
+    // Checkbox'lar seçiliyse 'on' gelir, seçili değilse undefined gelir.
+    // === 'on' yaparak tam boolean (true/false) durumuna eşitleyerek kaydediyoruz.
+    const detailedLogs = req.body.detailedLogs === 'on';
+    const autoCleanLogs = req.body.autoCleanLogs === 'on';
+    const autoBackup = req.body.autoBackup === 'on';
+    const twoFactorAuth = req.body.twoFactorAuth === 'on';
+    const ipRestriction = req.body.ipRestriction === 'on';
+
+    try {
+        await Safe.findOneAndUpdate(
+            { guildID },
+            { 
+                $set: {
+                    logChannelID,
+                    detailedLogs,
+                    autoCleanLogs,
+                    autoBackup,
+                    twoFactorAuth,
+                    ipRestriction
+                }
+            },
+            { upsert: true, new: true }
+        );
+
+        // İşlem bitince sayfayı yenile (opsiyonel olarak alert eklenebilir)
+        res.redirect(`/settings/${guildID}?success=true`);
+    } catch (err) {
+        console.error("Ayarlar kaydedilirken hata:", err);
+        res.status(500).send('Ayarlar kaydedilemedi.');
+    }
+});
+
+module.exports = router;

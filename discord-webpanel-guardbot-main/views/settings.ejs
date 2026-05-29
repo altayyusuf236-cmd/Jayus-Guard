@@ -546,39 +546,126 @@
             </div>
         </div>
 
-        <div class="settings-grid">
-            <!-- Log Settings -->
-            <div class="settings-card">
-                <div class="card-header">
-                    <div class="card-icon logs">
-                        <i class="fas fa-list-alt"></i>
-                    </div>
-                    <div class="card-title">Log Ayarları</div>
+       <form action="/settings/<%= guildID %>" method="POST">
+    <div class="settings-grid">
+        
+        <div class="settings-card">
+            <div class="card-header">
+                <div class="card-icon logs">
+                    <i class="fas fa-list-alt"></i>
                 </div>
+                <div class="card-title">Log Ayarları</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Log Kanalı</label>
+                <select class="form-select" name="logChannelID">
+                    <option value="">Log kanalı seçin</option>
+                    <% guild.channels.cache.filter(ch => ch.type === 0).forEach(channel => { %>
+                        <option value="<%= channel.id %>" <%= logChannelID === channel.id ? 'selected' : '' %>> #<%= channel.name %> </option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Detaylı Loglar</div>
+                    <div class="setting-description">Tüm aktiviteleri detaylı olarak logla</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="detailedLogs" <%= detailedLogs ? 'checked' : '' %>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Log Temizleme</div>
+                    <div class="setting-description">Eski logları otomatik temizle</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="autoCleanLogs" <%= autoCleanLogs ? 'checked' : '' %>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
 
-                <form action="/settings/<%= guildID %>" method="POST">
-                    <div class="form-group">
-                        <label class="form-label">Log Kanalı</label>
-                        <select class="form-select" name="logChannelID">
-                            <option value="">Log kanalı seçin</option>
-                            <% guild.channels.cache.filter(ch => ch.type === 0).forEach(channel => { %>
-                                <option value="<%= channel.id %>" <%= logChannelID === channel.id ? 'selected' : '' %>>
-                                    #<%= channel.name %>
-                                </option>
-                            <% }); %>
-                        </select>
-                    </div>
+        <div class="settings-card">
+            <div class="card-header">
+                <div class="card-icon backup">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="card-title">Yedekleme Ayarları</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Otomatik Yedekleme</div>
+                    <div class="setting-description">Sunucu ayarlarını otomatik yedekle</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="autoBackup" <%= autoBackup ? 'checked' : '' %>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Yedekleme Sıklığı</div>
+                    <div class="setting-description">Yedekleme aralığını belirle</div>
+                </div>
+                <select class="form-select" style="width: auto;" name="backupFrequency">
+                    <option value="daily">Günlük</option>
+                    <option value="weekly">Haftalık</option>
+                    <option value="monthly">Aylık</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Yedek Sayısı</div>
+                    <div class="setting-description">Saklanacak yedek sayısı</div>
+                </div>
+                <select class="form-select" style="width: auto;" name="maxBackups">
+                    <option value="5">5 yedek</option>
+                    <option value="10">10 yedek</option>
+                    <option value="20">20 yedek</option>
+                </select>
+            </div>
+        </div>
 
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <div class="setting-label">Detaylı Loglar</div>
-                            <div class="setting-description">Tüm aktiviteleri detaylı olarak logla</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="detailedLogs">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+        <div class="settings-card">
+            <div class="card-header">
+                <div class="card-icon security">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-title">Güvenlik Ayarları</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">İki Faktörlü Doğrulama</div>
+                    <div class="setting-description">Panel erişimi için 2FA gerektir</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="twoFactorAuth" <%= twoFactorAuth ? 'checked' : '' %>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">IP Kısıtlaması</div>
+                    <div class="setting-description">Belirli IP'lerden erişime izin ver</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="ipRestriction" <%= ipRestriction ? 'checked' : '' %>>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-save me-2"></i> Tüm Değişiklikleri Kaydet
+        </button>
+    </div>
+</form>
+
 
                     <div class="setting-item">
                         <div class="setting-info">
