@@ -6,6 +6,7 @@ const safeSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  safeUsers: { type: Array, default: [] },
   guardEnabled: {
     type: Boolean,
     default: false
