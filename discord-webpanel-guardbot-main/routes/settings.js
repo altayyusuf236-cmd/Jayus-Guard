@@ -2,70 +2,67 @@ const express = require('express');
 const router = express.Router();
 const Safe = require('../schemas/safe');
 const Log = require('../schemas/logchannel');
-const Panel = require('../schemas/Panel'); // ⚠️ Dosya adın küçük harfle 'panel.js' ise burası tam eşleşmeli!
+const Panel = require('../schemas/Panel'); 
 
 module.exports = (client) => {
 
-  // ⚙️ GENEL AYARLAR SAYFASINI GÖRÜNTÜLEME (GET)
+  // ⚙️ GET METODU (Sayfa Açılırken Tetiklenen Yer)
   router.get('/:guildID', async (req, res) => {
     const { guildID } = req.params;
 
     try {
-      if (!client) return res.status(500).send("Bot baglanti hatasi.");
+      if (!client) return res.status(500).send("HATA: Discord Bot bağlantısı sağlanamadı.");
 
-      // 1. Sunucuyu cache'den veya API'den çekiyoruz
       let guild = client.guilds.cache.get(guildID);
       if (!guild) {
         guild = await client.guilds.fetch(guildID).catch(() => null);
       }
-      if (!guild) return res.status(404).send("Sunucu bulunamadı kanka.");
+      if (!guild) return res.status(404).send("HATA: Bot bu sunucuda bulunamadı veya sunucu ID'si hatalı.");
 
-      // 🔥 RENDER GARANTİSİ: Eğer kanallar cache'de boş görünüyorsa API'den zorla çekiyoruz
+      // Kanalları zorla çekiyoruz
       if (guild.channels.cache.size === 0) {
         await guild.channels.fetch().catch(() => null);
       }
 
-      // 2. Veritabanından mevcut ayarları çekiyoruz (Yoksa boş taslak oluşturuyoruz)
+      // Veritabanı verilerini çekiyoruz
       const safeData = await Safe.findOne({ guildID }) || { guardEnabled: false };
       const logData = await Log.findOne({ guildID }) || { channelID: null };
-      let panelData = await Panel.findOne({ guildID });
       
+      // Panel verisini çekiyoruz, yoksa kaydedip sıfırdan oluşturuyoruz
+      let panelData = await Panel.findOne({ guildID });
       if (!panelData) {
-        panelData = await Panel.create({ guildID });
+        panelData = await Panel.create({ guildID }).catch(e => {
+            console.error("Panel verisi oluşturulurken DB hatası:", e);
+            return null;
+        });
       }
 
-      // 3. EJS sayfasına tüm verileri eksiksiz gönderiyoruz
+      // 💡 EKSİKLİK KONTROLÜ: EJS içinde hata çıkaran değişkenleri güvenceye alıyoruz
       res.render('settings', {
-        guildID,
-        guild,
-        botAvatar: client.user.displayAvatarURL(),
-        botUsername: client.user.username,
+        guildID: guildID,
+        guild: guild,
+        botAvatar: client.user.displayAvatarURL() || '',
+        botUsername: client.user.username || 'Guard Bot',
         guardEnabled: safeData.guardEnabled || false,
         logChannelID: logData.channelID || '',
-        panel: panelData
+        panel: panelData || { kanalKoruma: false, rolKoruma: false, emojiKoruma: false, banKickKoruma: false }
       });
 
     } catch (err) {
-      console.error("Render Ayarlar GET Hatası:", err);
-      res.status(500).send('Genel ayarlar yuklenirken hata olustu.');
+      // 🚨 EĞER SAYFA AÇILMIYORSA HATAYI DİREKT TARAYICIYA BASIYORUZ:
+      console.error("KRİTİK PANEL GET HATASI:", err);
+      res.status(500).send(`<h3>Genel Ayarlar Sayfası Yüklenirken Kod Patladı!</h3><p><b>Hata Detayı:</b> ${err.message}</p><p>Lütfen bu hatayı kontrol edin.</p>`);
     }
   });
 
-  // ⚙️ PANELDEKİ AYARLARI VERİTABANINA KAYDETME (POST)
+  // ⚙️ POST METODU (Ayarları Kaydederken Tetiklenen Yer)
   router.post('/:guildID', async (req, res) => {
     const { guildID } = req.params;
     const { logChannelID, kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma } = req.body;
 
     try {
-      // 1. Log kanalı ayarını güncelle
-      await Log.updateOne(
-        { guildID },
-        { $set: { channelID: logChannelID || null } },
-        { upsert: true }
-      );
-
-      // 2. Switch (Aç/Kapat) koruma durumlarını güncelle
-      // HTML formundan gelen switch'ler açıksa 'on' gelir, kapalıysa undefined gelir.
+      await Log.updateOne({ guildID }, { $set: { channelID: logChannelID || null } }, { upsert: true });
+      
       await Panel.findOneAndUpdate(
         { guildID },
         {
@@ -79,11 +76,10 @@ module.exports = (client) => {
         { upsert: true, new: true }
       );
 
-      // 3. İşlem bitince sayfayı tekrar yeniliyoruz ki güncel halleri ekrana gelsin
       res.redirect(`/settings/${guildID}`);
     } catch (err) {
-      console.error("Render Ayarlar POST Hatası:", err);
-      res.status(500).send('Ayarlar kaydedilemedi.');
+      console.error("KRİTİK PANEL POST HATASI:", err);
+      res.status(500).send(`Ayarlar kaydedilirken veritabanı hatası oluştu: ${err.message}`);
     }
   });
 
