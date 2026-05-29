@@ -245,7 +245,7 @@ app.use('/safe-users', require('./routes/safe-users'));
 app.use('/logs', require('./routes/logs'));
 app.use('/roles', require('./routes/roles'));
 app.use('/channels', require('./routes/channels'));
-app.use('/settings', require('./routes/settings'));
+app.use('/settings', require('./routes/settings')(client));
 app.use('/bot-settings', require('./routes/bot-settings'));
 
 app.get('/', async (req, res) => {
