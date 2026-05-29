@@ -941,4 +941,22 @@
         }
     });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Sayfadaki tüm formları buluyoruz
+    const forms = document.querySelectorAll("form");
+    
+    forms.forEach(form => {
+        // 2. Formların içindeki tüm butonları yakalıyoruz
+        const buttons = form.querySelectorAll("button");
+        
+        buttons.forEach(btn => {
+            // 3. Eğer butonun içinde "Kaydet" veya "Tüm Ayarları Kaydet" yazmıyorsa, formun düzenini bozmasın diye tipini "button" yapıyoruz
+            if (!btn.innerText.includes("Kaydet") && btn.type === "submit") {
+                btn.type = "button";
+            }
+        });
+    });
+});
+</script>
 </html> 

@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Safe = require('../schemas/safe');
 const Log = require('../schemas/logchannel');
-
-// ⚠️ Şema dosyanın adı küçük harfle 'panel.js' ise 'panel' yap kanka, Linux harfe duyarlıdır!
-const Panel = require('../schemas/Panel'); 
+const Panel = require('../schemas/Panel'); // ⚠️ Dosya adın küçük harfle 'panel.js' ise burası tam eşleşmeli!
 
 module.exports = (client) => {
 
@@ -15,17 +13,19 @@ module.exports = (client) => {
     try {
       if (!client) return res.status(500).send("Bot baglanti hatasi.");
 
-      // 1. Sunucuyu botun cache'inden veya API'den çekiyoruz
+      // 1. Sunucuyu cache'den veya API'den çekiyoruz
       let guild = client.guilds.cache.get(guildID);
       if (!guild) {
         guild = await client.guilds.fetch(guildID).catch(() => null);
       }
       if (!guild) return res.status(404).send("Sunucu bulunamadı kanka.");
 
-      // 🔥 İŞTE EKSİK OLAN PARÇA: Sunucudaki tüm kanalları EJS dropdown listesi için çekiyoruz
-      const channels = guild.channels.cache;
+      // 🔥 RENDER GARANTİSİ: Eğer kanallar cache'de boş görünüyorsa API'den zorla çekiyoruz
+      if (guild.channels.cache.size === 0) {
+        await guild.channels.fetch().catch(() => null);
+      }
 
-      // 2. Veritabanı kayıtlarını çekiyoruz
+      // 2. Veritabanından mevcut ayarları çekiyoruz (Yoksa boş taslak oluşturuyoruz)
       const safeData = await Safe.findOne({ guildID }) || { guardEnabled: false };
       const logData = await Log.findOne({ guildID }) || { channelID: null };
       let panelData = await Panel.findOne({ guildID });
@@ -34,11 +34,10 @@ module.exports = (client) => {
         panelData = await Panel.create({ guildID });
       }
 
-      // 3. EJS Şablonuna her şeyi eksiksiz, jilet gibi teslim ediyoruz
+      // 3. EJS sayfasına tüm verileri eksiksiz gönderiyoruz
       res.render('settings', {
         guildID,
         guild,
-        channels, // <--- SS'deki hatayı bitiren, can damarı olan satır burası!
         botAvatar: client.user.displayAvatarURL(),
         botUsername: client.user.username,
         guardEnabled: safeData.guardEnabled || false,
@@ -58,14 +57,15 @@ module.exports = (client) => {
     const { logChannelID, kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma } = req.body;
 
     try {
-      // 1. Log kanalını güncelle
+      // 1. Log kanalı ayarını güncelle
       await Log.updateOne(
         { guildID },
         { $set: { channelID: logChannelID || null } },
         { upsert: true }
       );
 
-      // 2. Switch durumlarını güncelle
+      // 2. Switch (Aç/Kapat) koruma durumlarını güncelle
+      // HTML formundan gelen switch'ler açıksa 'on' gelir, kapalıysa undefined gelir.
       await Panel.findOneAndUpdate(
         { guildID },
         {
@@ -79,8 +79,8 @@ module.exports = (client) => {
         { upsert: true, new: true }
       );
 
-      // İşlem bitince dinamik olarak hangi adresten geldiyse oraya geri atsın
-      res.redirect(req.originalUrl);
+      // 3. İşlem bitince sayfayı tekrar yeniliyoruz ki güncel halleri ekrana gelsin
+      res.redirect(`/settings/${guildID}`);
     } catch (err) {
       console.error("Render Ayarlar POST Hatası:", err);
       res.status(500).send('Ayarlar kaydedilemedi.');
