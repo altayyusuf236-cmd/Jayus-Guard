@@ -61,9 +61,9 @@ module.exports = (client) => {
                     detailedLogs: detailedLogs === 'on',
                     autoCleanLogs: autoCleanLogs === 'on',
                     autoBackup: autoBackup === 'on',
-                    twoFactorAuth: twoFactorAuth === 'on'
-                    ipRestriction: ipRestriction === 'on'
-                    discordNotifications: discordNotifications === 'on'
+                    twoFactorAuth: twoFactorAuth === 'on',
+                    ipRestriction: ipRestriction === 'on',
+                    discordNotifications: discordNotifications === 'on',
                     emailNotifications: emailNotifications === 'on'
                 }
             },
