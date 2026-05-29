@@ -40,10 +40,10 @@ fs.readdirSync("./events").filter(file => file.endsWith(".js")).forEach(file => 
   client.on(evt.name, evt.execute.bind(null, client));
 });
 const activities = [
-  { name: ' ❤️ New Guard', type: 0 },
-  { name: 'qoldslitz', type: 3 },
-  { name: 'Yeni komutlar ekleniyor...', type: 0 },
-  { name: 'Sunucunu koruyor 🛡️', type: 5 },
+  { name: 'discors.gg/jayus', type: 0 },
+  { name: 'By qoldslitz34', type: 3 },
+  { name: 'discord.gg/jayus', type: 0 },
+  { name: '️By qoldslitz34', type: 5 },
   { name: '.help komutlarıma bak!', type: 2 },
 ];
 

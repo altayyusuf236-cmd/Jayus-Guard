@@ -47,7 +47,7 @@ module.exports = {
     const logSelect = new StringSelectMenuBuilder()
       .setCustomId('log_channel')
       .setPlaceholder('Bir log kanalı seçin...')
-      .addOptions(textChannels.map(c => ({ label: c.name, value: c.id })));
+      .addOptions(textChannels.first(25).map(c => ({ label: c.name, value: c.id })));
     const logRow = new ActionRowBuilder().addComponents(logSelect);
     const logMsg = await message.reply({
       embeds: [new EmbedBuilder().setTitle('1️⃣ Log Kanalı').setDescription('Lütfen log kanalı olarak kullanılacak metin kanalını seçin.').setColor('#5865f2')],
@@ -69,7 +69,7 @@ module.exports = {
       .setPlaceholder('Güvenli kullanıcı(lar)ı seçin...')
       .setMinValues(1)
       .setMaxValues(Math.min(25, members.size))
-      .addOptions(members.map(m => ({ label: m.user.tag, value: m.id })));
+      .addOptions(members.first(25).map(m => ({ label: m.user.tag, value: m.id })));
     const safeRow = new ActionRowBuilder().addComponents(safeSelect);
     const safeMsg = await message.channel.send({
       embeds: [new EmbedBuilder().setTitle('2️⃣ Güvenli Kullanıcılar').setDescription('Lütfen safe listeye eklenecek kullanıcı(lar)ı seçin.').setColor('#43b581')],
@@ -128,7 +128,7 @@ module.exports = {
         { guildID: message.guild.id },
         { $set: { [item.key]: guardSettings[item.key] } },
         { upsert: true }
-      );
+    );
     }
 
     // Sonuç embed
@@ -148,4 +148,4 @@ module.exports = {
     await message.channel.send('Bot yeniden başlatılıyor...');
     setTimeout(() => process.exit(0), 2000);
   }
-}; 
+};

@@ -735,6 +735,10 @@
                     <i class="fas fa-key"></i> Şifre Değiştir
                 </button>
             </div>
+            
+            <button type="button" id="korumaKaydetBtn" class="btn btn-success me-2">
+    <i class="fas fa-save"></i> Korumaları Kaydet
+</button>
 
             <!-- Notification Settings -->
             <div class="settings-card">
@@ -810,6 +814,30 @@
             }
         });
     </script>
+    // 🛡️ GÜVENLİK KORUMA AYARLARINI VERİTABANINA KAYDETME KODU
+document.getElementById('korumaKaydetBtn')?.addEventListener('click', async () => {
+    const kanalKoruma = document.querySelector('input[name="kanalKoruma"]').checked;
+    const rolKoruma = document.querySelector('input[name="rolKoruma"]').checked;
+    const emojiKoruma = document.querySelector('input[name="emojiKoruma"]').checked;
+    const banKickKoruma = document.querySelector('input[name="banKickKoruma"]').checked;
+
+    try {
+        const response = await fetch('/api/guard-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kanalKoruma, rolKoruma, emojiKoruma, banKickKoruma })
+        });
+        const data = await response.json();
+        if(data.success) {
+            alert('✅ Koruma ayarları başarıyla veritabanına kaydedildi kanka!');
+            window.location.reload();
+        } else {
+            alert('❌ Ayarlar kaydedilirken hata oluştu: ' + data.error);
+        }
+    } catch (err) {
+        alert('Sunucuya bağlanılamadı kanka: ' + err.message);
+    }
+});
 </body>
 <%- include('layout-blocker.ejs') %>
 </html> 
