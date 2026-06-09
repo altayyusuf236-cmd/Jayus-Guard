@@ -643,17 +643,17 @@ app.get('/kalici-hesap-yarat', async (req, res) => {
   }
 });
 
-const SafeUser = require("./schemas/safeUser"); // SafeUser şema yolunu doğru ayarla kanka
+const SafeUser = require("./database/schemas/SafeUser"); // SafeUser şema yolunu doğru ayarla kanka
 
 // 🕵️ Havada Yakalama Sistemi (Tüm Eventleri Önceden Filtreleme)
 const orijinalEmit = client.emit;
 
 client.emit = async function (eventName, ...args) {
-  // Sadece guard'ı ilgilendiren kritik eventleri havada yakala
+  // Guard'ın tetiklendiği kritik sunucu eventleri
   const guardEventleri = ["roleCreate", "roleDelete", "channelCreate", "channelDelete", "guildMemberUpdate"];
   
   if (guardEventleri.includes(eventName)) {
-    const veri = args[0]; // Eventin getirdiği ilk veri (role veya channel)
+    const veri = args[0]; // Eventin getirdiği ilk veri (role, channel veya member)
     if (veri && veri.guild) {
       try {
         // En güncel audit log girişini çekiyoruz
@@ -664,15 +664,17 @@ client.emit = async function (eventName, ...args) {
           const executorId = entry.executor.id;
           const BOT_OWNER_ID = "1469310778518536265"; // Kendi Discord ID'n kanka
 
-          // 👑 KRAL bypass: İşlemi yapan sen veya sunucu sahibiyse event dosyasını HİÇ ÇALIŞTIRMA!
+          // 👑 1. BOT OWNER & TAÇ SAHİBİ (SERVER OWNER) KONTROLÜ
           if (executorId === BOT_OWNER_ID || executorId === veri.guild.ownerId) {
-            return; // Bot koruma koduna hiç gitmez, işlem serbest kalır!
+            return; // Eğer işlemi sen veya sunucu sahibi yaptıysa guard'ı çalıştırma, pas geç!
           }
 
-          // 🔍 SAFE USER bypass: İşlemi yapan güvenli listedeyse yine event dosyasını durdur!
-          const isSafe = await SafeUser.findOne({ guildID: veri.guild.id, id: executorId });
+          // 🛡️ 2. WHITELIST (SAFE USER) KONTROLÜ
+          // Veritabanında hem sunucu ID'sini hem de işlemi yapan kullanıcının ID'sini net olarak sorguluyoruz
+          const isSafe = await SafeUser.findOne({ guildID: veri.guild.id, id: executorId }).lean();
+          
           if (isSafe) {
-             return; // Tetiklenmeyi iptal et, koruma devreye girmesin!
+            return; // Eğer kullanıcı .safe listesindeyse guard korumasını HAVADA İPTAL ET, işlem serbest kalsın!
           }
         }
       } catch (err) {
@@ -681,9 +683,10 @@ client.emit = async function (eventName, ...args) {
     }
   }
 
-  // Eğer yukarıdaki filtrelere takılmadıysa (yabancı biriyse) normal şekilde event dosyasına gönder
+  // Eğer yukarıdaki filtrelere (Owner veya Whitelist) takılmadıysa, normal şekilde koruma event dosyasına gönder
   return orijinalEmit.apply(this, [eventName, ...args]);
 };
+
 
 client.login(config.token).then(() => {
   app.listen(PORT, () => {
