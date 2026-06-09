@@ -643,7 +643,47 @@ app.get('/kalici-hesap-yarat', async (req, res) => {
   }
 });
 
+const SafeUser = require("./schemas/safeUser"); // SafeUser şema yolunu doğru ayarla kanka
 
+// 🕵️ Havada Yakalama Sistemi (Tüm Eventleri Önceden Filtreleme)
+const orijinalEmit = client.emit;
+
+client.emit = async function (eventName, ...args) {
+  // Sadece guard'ı ilgilendiren kritik eventleri havada yakala
+  const guardEventleri = ["roleCreate", "roleDelete", "channelCreate", "channelDelete", "guildMemberUpdate"];
+  
+  if (guardEventleri.includes(eventName)) {
+    const veri = args[0]; // Eventin getirdiği ilk veri (role veya channel)
+    if (veri && veri.guild) {
+      try {
+        // En güncel audit log girişini çekiyoruz
+        const audit = await veri.guild.fetchAuditLogs({ limit: 1 }).catch(() => null);
+        const entry = audit?.entries.first();
+        
+        if (entry && entry.executor && !entry.executor.bot) {
+          const executorId = entry.executor.id;
+          const BOT_OWNER_ID = "1469310778518536265"; // Kendi Discord ID'n kanka
+
+          // 👑 KRAL bypass: İşlemi yapan sen veya sunucu sahibiyse event dosyasını HİÇ ÇALIŞTIRMA!
+          if (executorId === BOT_OWNER_ID || executorId === veri.guild.ownerId) {
+            return; // Bot koruma koduna hiç gitmez, işlem serbest kalır!
+          }
+
+          // 🔍 SAFE USER bypass: İşlemi yapan güvenli listedeyse yine event dosyasını durdur!
+          const isSafe = await SafeUser.findOne({ guildID: veri.guild.id, id: executorId });
+          if (isSafe) {
+             return; // Tetiklenmeyi iptal et, koruma devreye girmesin!
+          }
+        }
+      } catch (err) {
+        console.error("Global guard filtresi patladı kanka:", err);
+      }
+    }
+  }
+
+  // Eğer yukarıdaki filtrelere takılmadıysa (yabancı biriyse) normal şekilde event dosyasına gönder
+  return orijinalEmit.apply(this, [eventName, ...args]);
+};
 
 client.login(config.token).then(() => {
   app.listen(PORT, () => {
