@@ -643,20 +643,22 @@ app.get('/kalici-hesap-yarat', async (req, res) => {
   }
 });
 
-const SafeUser = require("./schemas/safeUser"); // SafeUser şema yolunu doğru ayarla kanka
+const SafeUser = require("./schemas/safeUser"); // Şema yolu
 
 // 🕵️ Havada Yakalama Sistemi (Tüm Eventleri Önceden Filtreleme)
 const orijinalEmit = client.emit;
 
 client.emit = async function (eventName, ...args) {
-  // Guard'ın tetiklendiği kritik sunucu eventleri
-  const guardEventleri = ["roleCreate", "roleDelete", "channelCreate", "channelDelete", "guildMemberUpdate"];
+  const guardEventleri = ["roleCreate", "roleDelete", "roleUpdate", "channelCreate", "channelDelete", "guildMemberUpdate"];
   
   if (guardEventleri.includes(eventName)) {
-    const veri = args[0]; // Eventin getirdiği ilk veri (role, channel veya member)
+    const veri = args[0]; 
     if (veri && veri.guild) {
       try {
-        // En güncel audit log girişini çekiyoruz
+        // Gecikmeleri önlemek için audit log gelene kadar 1 saniye (1000ms) bekletiyoruz kanka
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // En güncel denetim kaydını çekiyoruz
         const audit = await veri.guild.fetchAuditLogs({ limit: 1 }).catch(() => null);
         const entry = audit?.entries.first();
         
@@ -664,17 +666,20 @@ client.emit = async function (eventName, ...args) {
           const executorId = entry.executor.id;
           const BOT_OWNER_ID = "1469310778518536265"; // Kendi Discord ID'n kanka
 
-          // 👑 1. BOT OWNER & TAÇ SAHİBİ (SERVER OWNER) KONTROLÜ
+          // 👑 1. BOT OWNER & SUNUCU SAHİBİ KONTROLÜ
           if (executorId === BOT_OWNER_ID || executorId === veri.guild.ownerId) {
-            return; // Eğer işlemi sen veya sunucu sahibi yaptıysa guard'ı çalıştırma, pas geç!
+            return; // Sen veya kurucuysa guard eventini çalıştırma, pas geç!
           }
 
-          // 🛡️ 2. WHITELIST (SAFE USER) KONTROLÜ
-          // Veritabanında hem sunucu ID'sini hem de işlemi yapan kullanıcının ID'sini net olarak sorguluyoruz
-          const isSafe = await SafeUser.findOne({ guildID: veri.guild.id, id: executorId }).lean();
+          // 🛡️ 2. GÜVENLİ LİSTE (WHITELIST) KONTROLÜ
+          // Şemana (guildID ve id) birebir uygun şekilde en net aramayı yapıyoruz
+          const isSafe = await SafeUser.findOne({ 
+            guildID: veri.guild.id, 
+            id: executorId 
+          }).lean();
           
           if (isSafe) {
-            return; // Eğer kullanıcı .safe listesindeyse guard korumasını HAVADA İPTAL ET, işlem serbest kalsın!
+            return; // Eğer kullanıcı .safe listesindeyse koruma dosyasını çalıştırmadan havada durdur!
           }
         }
       } catch (err) {
@@ -683,7 +688,7 @@ client.emit = async function (eventName, ...args) {
     }
   }
 
-  // Eğer yukarıdaki filtrelere (Owner veya Whitelist) takılmadıysa, normal şekilde koruma event dosyasına gönder
+  // Filtrelere takılmayan (yabancı) biriyse normal koruma eventlerine gönder
   return orijinalEmit.apply(this, [eventName, ...args]);
 };
 
