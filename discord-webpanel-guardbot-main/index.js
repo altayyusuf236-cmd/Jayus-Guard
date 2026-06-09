@@ -643,7 +643,7 @@ app.get('/kalici-hesap-yarat', async (req, res) => {
   }
 });
 
-const SafeUser = require("./schemas/SafeUser"); // SafeUser şema yolunu doğru ayarla kanka
+const SafeUser = require("./schemas/safeUser"); // SafeUser şema yolunu doğru ayarla kanka
 
 // 🕵️ Havada Yakalama Sistemi (Tüm Eventleri Önceden Filtreleme)
 const orijinalEmit = client.emit;
