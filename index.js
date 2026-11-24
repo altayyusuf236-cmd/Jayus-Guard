@@ -40,9 +40,9 @@ fs.readdirSync("./events").filter(file => file.endsWith(".js")).forEach(file => 
   client.on(evt.name, evt.execute.bind(null, client));
 });
 const activities = [
-  { name: 'discors.gg/jayus', type: 0 },
+  { name: 'discors.gg/ittifaktr', type: 0 },
   { name: 'By qoldslitz34', type: 3 },
-  { name: 'discord.gg/jayus', type: 0 },
+  { name: 'discord.gg/ittifaktr', type: 0 },
   { name: '️By qoldslitz34', type: 5 },
   { name: '.help komutlarıma bak!', type: 2 },
 ];
@@ -94,7 +94,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/backups', express.static(path.join(__dirname, 'backups')));
 app.use(session({
-  secret: 'güçlü-bir-gizli-kelime',
+  secret: '3644AB3644',
   resave: false,
   saveUninitialized: false,
   cookie: {
