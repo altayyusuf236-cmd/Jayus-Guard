@@ -40,7 +40,7 @@ fs.readdirSync("./events").filter(file => file.endsWith(".js")).forEach(file => 
   client.on(evt.name, evt.execute.bind(null, client));
 });
 const activities = [
-  { name: 'discors.gg/ittifaktr', type: 0 },
+  { name: 'discord.gg/ittifaktr', type: 0 },
   { name: 'By qoldslitz34', type: 3 },
   { name: 'discord.gg/ittifaktr', type: 0 },
   { name: '️By qoldslitz34', type: 5 },
